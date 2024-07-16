@@ -1,13 +1,13 @@
 
 # Coda-C_PList
 
-## The Coda-C Property List Library
+## ⭐️ The Coda-C Property List Library ⭐️
 
 This library provides a classed system of objects that model the Apple Propery List or 'plist'.
 A plist is any one of the supported objects, but is most often a Dictionary.
 Plists are easy to create and modify programmatically, and even easier to save and load from disk.
 
-## Features:
+## 🔵 Features:
 
 * Supports XML serialization in 'plist' or 'codalist' formats
 * Native C object types.
@@ -16,17 +16,16 @@ Plists are easy to create and modify programmatically, and even easier to save a
 * Plugin support for Binary Property List serialization with a compatable library
 * A pure C source and API for increased portability
 
-## Building
+## 🟢 Building
 
 You need a modern C compiler.  Testing has been done for 64-bit Apple, Linux, and Windows systems with gcc/clang.  A Makefile is provided with the default to install in /usr/local.
 
-## Links
+## 🟣 Links
 
 * Homepage:  [Coda-C](https://coda-c.com/)
 
-## Release notes:
+## 🟠 Release notes:
 1. Empty \<data\> is not allowed.
 2. "\<key/\>" is not allowed for blank dictionary keys.
 3. XML attributes like aaa in ( \<true aaa="x" /\> ) are not allowed.
 4. Set is serialized to Array for Apple XML.
-
