@@ -1,5 +1,4 @@
 
-
 # Coda-C_PList
 
 ## The Coda-C Property List Library
@@ -17,8 +16,14 @@ Plists are easy to create and modify programmatically, and even easier to save a
 * Plugin support for Binary Property List serialization with a compatable library
 * A pure C source and API for increased portability
 
-> [!CAUTION]
-> UNDER CONSTRUCTION
+## Building
+
+You need a modern C compiler.  Testing has been done for 64-bit Apple, Linux, and Windows systems with gcc/clang.  A Makefile is provided but not required.  The resulting library
+and headers should be installed by you, normally in /usr/local.
+
+## Links
+
+* Homepage:  [Coda-C](https://coda-c.com/)
 
 > [!TIP]
 > Release notes:
@@ -28,11 +33,9 @@ Plists are easy to create and modify programmatically, and even easier to save a
 > 4. Set is serialized to Array for Apple XML.
 
 
-a
 
-a
-
-a
+> [!CAUTION]
+> UNDER CONSTRUCTION
 
 a
 
