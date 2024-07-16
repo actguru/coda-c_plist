@@ -18,38 +18,15 @@ Plists are easy to create and modify programmatically, and even easier to save a
 
 ## Building
 
-You need a modern C compiler.  Testing has been done for 64-bit Apple, Linux, and Windows systems with gcc/clang.  A Makefile is provided but not required.  The resulting library
-and headers should be installed by you, normally in /usr/local.
+You need a modern C compiler.  Testing has been done for 64-bit Apple, Linux, and Windows systems with gcc/clang.  A Makefile is provided with the default to install in /usr/local.
 
 ## Links
 
 * Homepage:  [Coda-C](https://coda-c.com/)
 
-> [!TIP]
-> Release notes:
-> 1. Empty \<data\> is not allowed.
-> 2. "\<key/\>" is not allowed for blank dictionary keys.
-> 3. XML attributes like aaa in ( \<true aaa="x" /\> ) are not allowed.
-> 4. Set is serialized to Array for Apple XML.
+## Release notes:
+1. Empty \<data\> is not allowed.
+2. "\<key/\>" is not allowed for blank dictionary keys.
+3. XML attributes like aaa in ( \<true aaa="x" /\> ) are not allowed.
+4. Set is serialized to Array for Apple XML.
 
-
-
-> [!CAUTION]
-> UNDER CONSTRUCTION
-
-a
-
-> [!NOTE]
-> Useful information that users should know, even when skimming content.
-
-> [!TIP]
-> Helpful advice for doing things better or more easily.
-
-> [!IMPORTANT]
-> Key information users need to know to achieve their goal.
-
-> [!WARNING]
-> Urgent info that needs immediate user attention to avoid problems.
-
-> [!CAUTION]
-> Advises about risks or negative outcomes of certain actions.
