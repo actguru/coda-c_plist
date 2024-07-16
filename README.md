@@ -22,9 +22,9 @@ Plists are easy to create and modify programmatically, and even easier to save a
 
 > [!TIP]
 > Release notes:
-> 1. Empty <data> is not allowed.
-> 2. "<key/>" is not allowed for blank dictionary keys.
-> 3. XML attributes like aaa in ( <true aaa="x" /> ) are not allowed.
+> 1. Empty \<data\> is not allowed.
+> 2. "\<key/\>" is not allowed for blank dictionary keys.
+> 3. XML attributes like aaa in ( \<true aaa="x" /\> ) are not allowed.
 > 4. Set is serialized to Array for Apple XML.
 
 
