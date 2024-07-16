@@ -15,7 +15,7 @@ Plists are easy to create and modify programmatically, and even easier to save a
 * Provides container manipulation for Array and Dictionary
 * Retain counted objects simplify changes to plists
 * Plugin support for Binary Property List serialization with a compatable library
-* A pure C source and API for increased portablity
+* A pure C source and API for increased portability
 
 > [!CAUTION]
 > UNDER CONSTRUCTION
