@@ -4,7 +4,8 @@
 ## ⭐️ The Coda-C Property List Library ⭐️
 
 This library provides a classed system of objects that model the Apple Propery List or 'plist'.
-A plist is any one of the supported objects, but is most often a Dictionary.
+A plist is any one of the supported objects where containers reference
+supported objects, but is most often a Dictionary.
 Plists are easy to create and modify programmatically, and even easier to save and load from disk.
 
 ## 🔵 Features:
