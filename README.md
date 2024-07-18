@@ -23,6 +23,7 @@ You need a modern C compiler.  Testing has been done for 64-bit Apple, Linux, an
 
 ## 🟣 Links
 
+* Documentation:  [Docs](https://github.com/actguru/coda-c_plist-docs)
 * Homepage:  [Coda-C](https://coda-c.com/)
 
 ## 🟠 Release notes:
