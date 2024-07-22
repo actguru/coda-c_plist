@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codalist SYSTEM "http://www.coda-c.com/dtds/codalist.dtd">
+<codalist>
+<dict>
+	<key>amp.pass</key><string>&lt;plist version="1.0"&gt;
+&lt;string&gt;&amp;#38;&amp;amp;&amp;lt;&amp;gt;&amp;quot;&amp;apos;Good&lt;/string&gt;
+&lt;/plist&gt;
+</string>
+	<key>attribute.fail</key><string>&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+	&lt;key   &gt;boolean&lt;/key &gt;
+	&lt;true a="x" b="  /&gt;
+&lt;!-- comment --&gt;
+&lt;/dict&gt; 
+</string>
+	<key>bad-string.fail</key><string>&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+	&lt;key&gt;&lt;/key &gt;
+	&lt;string&gt;ABC¾¾&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</string>
+	<key>bad_doc.fail</key><string>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist CRAZY "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict/&gt;
+&lt;/plist&gt;
+</string>
+	<key>bad_xmlutf.fail</key><string>&lt;?xml version="1.0" encoding="latin1"?&gt;
+&lt;!DOCTYPE plist CRAZY "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict/&gt;
+&lt;/plist&gt;
+</string>
+	<key>blank_data.fail</key><string>&lt;plist version="1.0"&gt;
+&lt;data&gt;&lt;/data&gt;
+&lt;/plist&gt;
+
+// Note: Apple "plutil" is ok with this.
+</string>
+	<key>blank_date.fail</key><string>&lt;plist version="1.0"&gt;
+&lt;date&gt;&lt;/date&gt;
+&lt;/plist&gt;
+</string>
+	<key>blank_int.fail</key><string>&lt;plist version="1.0"&gt;
+&lt;integer&gt;&lt;/integer&gt;
+&lt;/plist&gt;
+</string>
+	<key>blank_key.pass</key><string>&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+	&lt;key &gt;&lt;/key &gt;
+	&lt;string&gt;ABC&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</string>
+	<key>blank_key2.fail</key><string>&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+	&lt;key/&gt;
+	&lt;string&gt;ABC&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</string>
+	<key>blank_real.fail</key><string>&lt;plist version="1.0"&gt;
+&lt;real&gt;&lt;/real&gt;
+&lt;/plist&gt;
+</string>
+	<key>blank_string.pass</key><string>&lt;plist version="1.0"&gt;
+&lt;string&gt;&lt;/string&gt;
+&lt;/plist&gt;
+</string>
+	<key>comment.pass</key><string>&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+
+&lt;!--
+&lt;dict&gt;
+&lt;key&gt;Hello&lt;/key&gt;
+	--
+&lt;string&gt;World&amp;a&lt;/string&gt;
+&lt;/dict&gt; 
+--&gt;
+
+&lt;/dict&gt;
+&lt;/plist&gt;
+</string>
+	<key>date_range.fail</key><string>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+	&lt;key&gt;Time1&lt;/key&gt;
+	&lt;date&gt;1000-01-01T00:00:60Z&lt;/date&gt;
+	&lt;key&gt;Time2&lt;/key&gt;
+	&lt;date&gt;1000-12-31T23:59:60Z&lt;/date&gt;
+	&lt;key&gt;Time3&lt;/key&gt;
+	&lt;date&gt;3000-02-30T23:59:59Z&lt;/date&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+
+// FEB-30 is bad
+
+:!plutil -p date_range.fail
+{
+	"Time1" =&gt; 0999-12-27 00:01:00 +0000 // Wrong
+	"Time2" =&gt; 1000-12-26 00:00:00 +0000 // Wrong
+	"Time3" =&gt; 3000-03-02 23:59:59 +0000 // Wrong
+}
+</string>
+	<key>hex.pass</key><string>&lt;plist version="1.0"&gt;
+&lt;integer&gt;0XFFff&lt;/integer&gt;
+&lt;/plist&gt;
+</string>
+	<key>key_comment.pass</key><string>&lt;plist&gt;
+&lt;dict&gt;
+&lt;key&gt;&lt;!-- test --&gt;&lt;/key&gt;
+&lt;string&gt;value&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+More comments here...
+</string>
+	<key>odd_data.pass</key><string>&lt;plist&gt;
+&lt;data&gt;"base64" encoded / === / Texts ===&lt;/data&gt;
+&lt;/plist&gt;
+</string>
+	<key>utfhex.pass</key><string>&lt;plist version="1.0"&gt;
+&lt;string&gt;&amp;#x10FF00;&lt;/string&gt;
+&lt;/plist&gt;
+</string>
+</dict>
+</codalist>
