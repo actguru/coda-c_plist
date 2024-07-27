@@ -17,6 +17,10 @@ Plists are easy to create and modify programmatically, and even easier to save a
 * Plugin support for Binary Property List serialization with a compatable library
 * A pure C source and API for increased portability
 
+## 🟤 Requirements
+
+* gcc/clang
+
 ## 🟢 Building
 
 You need a modern C compiler.  Testing has been done for 64-bit Apple, Linux, and Windows systems with gcc/clang.  A Makefile is provided with the default to install in /usr/local.
