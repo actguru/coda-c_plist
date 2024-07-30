@@ -23,7 +23,8 @@ Plists are easy to create and modify programmatically, and even easier to save a
 
 ## 🟢 Building
 
-You need a modern C compiler.  Testing has been done for 64-bit Apple, Linux, and Windows systems with gcc/clang.  A Makefile is provided with the default to install in /usr/local.
+You need a modern C compiler.  Testing has been done for 64-bit Apple and Linux systems with gcc/clang.  A Makefile is provided with the default to install in /usr/local.
+Note:  For Linux, "sudo ldconfig" should be run after "make install".
 
 ## 🟣 Links
 
