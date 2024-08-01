@@ -46,6 +46,8 @@ along with Coda-C_PList. If not, see <https://www.gnu.org/licenses/>.
 	#define OBind1_2M(a,b) OBind1_2(a,b)
 	#define OClass_(x) Class_ ## x
 	#define OClass(x) OClass_(x)
+
+	#define	sizeat(type) sizeof(*((type)0))
 	#define CodaClassDef(clas,stor,...) typedef stor* clas; \
 		extern clas OBind1_2(Class,clas);
 	#define Array_add(aaa,ooo)  Array_addObject(aaa,ooo)
@@ -123,9 +125,14 @@ int Root_get_count(Root self);
 #define Root_count Root_get_count
 Char ToContainer(Obj container);
 void codac_versions(void);
+CodaClassDef(Int4,int4,Root);
+CodaClassDef(Short,short,Root);
+Int4 Int4_Value(int4 value);
+Short Short_Value(short value);
 CodaClassDef(Bool,_Bool,Root);
 CodaClassDef(Data,void,Root);
 CodaClassDef(DateString,char,Char);
+CodaClassDef(FileMem,struct FileMem_,Root);
 CodaClassDef(Huge,huge,Root);
 CodaClassDef(HugeUID,huge,Huge);
 CodaClassDef(Real,double,Root);
@@ -138,7 +145,12 @@ CodaClassDef(Real,double,Root);
 	PLIST_NoEncoding=32,
 	PLIST_NoDoctype=64,
 	PLIST_NoPVersion=128,
-	PLIST_Binary=2048,
+	PLIST_Coda_C     =1<<10,
+	PLIST_Binary     =1<<11,
+	PLIST_ObjectStream=4096,
+	PLIST_Json       =1<<13,
+	JSON_Pretty      =1<<14,
+	PLIST_Strict     =1<<15,
 	};
 Bool Bool_Value(bool value);
 Data Data_NewBlock(Data self,int count,pointer address);
@@ -147,8 +159,12 @@ DateString DateString_Value(char *string);
 DateString DateString_FromGmtime(struct_tm *when);
 struct_tm* DateString_toGmtime(DateString self);
 pointer Gmtime_check(struct_tm *self);
+FileMem FileMem_Open(Data optional);
+Data FileMem_ToData(FileMem self);
 Huge Huge_Value(huge value);
 HugeUID HugeUID_Value(huge value);
+Void JsonNull_Value(void);
+bool isa_JsonNull(Obj obj);
 Char OError(void);
 int4 PList_lastLoadType(void);
 Obj PList_FromBlock(int count,pointer block,int flags);
@@ -169,4 +185,10 @@ Char obj_ToString(Obj obj);
 Char obj_FromString(Obj obj,char *string);
 void Object_leaks_cleaner(void *vp);
 void Object_leaks_NOP(pointer junk);
+	enum { UTF8max=0x10FFFF, };
+int4 Json_lastLoadType(void);
+Obj Json_FromBlock(int count,pointer block,int flags);
+Obj Json_toStream(Obj stream,Obj container,int flags);
+Obj Json_save(char *file,Obj container,int flags);
+Obj Json_Load(char *file,int flags);
 

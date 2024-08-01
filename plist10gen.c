@@ -18,6 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Coda-C_PList. If not, see <https://www.gnu.org/licenses/>.
 
 */
+	#define QWebsite "www.coda-c.com"
 
 	#define _GNU_SOURCE 1
 
@@ -878,7 +879,7 @@ void *CMux_KeyData(pointer cmux,char *key,pointer data) {
 
 $boot() {
 	Version_register( "Coda-C_PList",
-	Os("1.0, www.coda-c.com, Copyright (c) 2024  Stephen M. Jones, Affero GPL 3."
+	Os(QVersion ", " QWebsite ", Copyright (c) " QCopyYears "  Stephen M. Jones, Affero GPL 3."
 	"\000"));
 	static_assert(sizeof(huge)==8,"wrong size huge?");
 	}
@@ -1501,6 +1502,337 @@ $boot(StephenMJones) {
 
 #undef class
 
+CodaClassDef(Int4,int4,Root);
+CodaClassDef(Short,short,Root);
+	#define Int4_count Root_get_count
+	#define Short_count Root_get_count
+	typedef pointer (*UcEncoder)(pointer ptr,int4 value,pointer context);
+Int4 Int4_Value(int4 value);
+Int4 Int4_NewBlock(Int4 self,int count,pointer address);
+int Int4_length(Int4 self);
+Short Short_Value(short value);
+Short Short_NewBlock(Short self,int count,pointer address);
+int Short_length(Short self);
+int u2_codes(pointer u2str);
+int u2_count(pointer u2str,int codes);
+int u2_scan(pointer u2str,int countOrNeg1,int codes,int *counter,int *faults);
+pointer u2_encode(pointer ptr,int4 value,pointer context);
+pointer u4_encode(pointer ptr,int4 value,pointer context);
+int uc_codes(char* ustr);
+int uc_count(char *ustr,int codes);
+int uc_scan(char *ustr,int lenOrNeg1,int codes,int *counter,int *faults);
+pointer uc_encode(pointer ptr,int4 value,pointer context);
+int uc_faults(char *ustr);
+Obj uN_Convert(int isizeN,UcEncoder encoder,pointer context,pointer uNstr,int countOrNeg1,int *faults);
+Short uc_ToU2(char *u1str,int countOrNeg1,int *faults);
+Int4 uc_ToU4(char *u1str,int countOrNeg1,int *faults);
+Char u2_ToUc(pointer u2str,int countOrNeg1,int *faults);
+Int4 u2_ToU4(pointer u2fstr,int countOrNeg1,int *faults);
+Char u4_ToUc(pointer u4str,int countOrNeg1,int *faults);
+Short u4_ToU2(pointer u4str,int countOrNeg1,int *faults);
+
+int uc_codes(char* ustr) {
+	return uc_scan(ustr,-1,-1,NULL,NULL);
+	}
+
+int uc_count(char *ustr,int codes) {
+	int bytes=0;
+	uc_scan(ustr,-1,codes,&bytes,NULL);
+	return(bytes);
+	}
+
+int uc_scan(char *ustr,int lenOrNeg1,int codes,int *counter,int *faults) {
+	unsigned char *str=(unsigned char *)ustr;
+	int haslimit=(codes>=0);
+	codes&=0x7FFFFFFF;
+	int len,extra=0,utfch=0,fault=0;
+	for(len=0;1;++len) {
+		if (lenOrNeg1>=0 && len>=lenOrNeg1) break;
+		int cc=str[len]; if (lenOrNeg1<0 && !cc) break;
+		int oldutflen=utfch;
+		if (0x80==(cc&0xC0)) {
+			if (extra==1) { extra=0; ++utfch; }
+			ei (extra>0)  --extra;
+			else       	  ++fault;
+			}
+		else {
+			if (extra)  { extra=0; ++fault;
+				if (utfch+fault>codes) { --fault; break; }
+				}
+			if (0x00==(cc&0x80)) { ++utfch; }
+			ei (0xC0==(cc&0xE0)) { extra=1; }
+			ei (0xE0==(cc&0xF0)) { extra=2; }
+			ei (0xF0==(cc&0xF8)) { extra=3; }
+			else 				 { ++fault; }
+			}
+		if (haslimit) {
+			int parto=(extra ? 1:0);
+			if (utfch+fault+parto>codes) {
+				if (oldutflen!=utfch) --utfch; else --fault;
+				break;
+				}
+			}
+		}
+	if (extra) ++fault;
+	if (counter) *counter=len;
+	if (faults) *faults=(fault);
+	return(utfch+fault);
+	}
+
+pointer uc_encode(pointer ptr,int4 value,pointer context) {
+	if (!ptr) {
+		if (!value) return Class_Char;
+		return(context);
+		}
+	unsigned char* cp=ptr;
+	value&=0x1FFFFF;
+	if (value<0x80)    { *cp++ = value; }
+	ei (value<0x800)   { *cp++ = 0xC0|((value>> 6)&0x1F);
+		*cp++ = 0x80|(value&0x3F);
+		}
+	ei (value<0x10000)  { *cp++ = 0xE0|((value>>12)&0x0F);
+		*cp++ = 0x80|((value>>6)&0x3F); *cp++ = 0x80|(value&0x3F);
+		}
+	else 			   { *cp++ = 0xF0|((value>>18)&0x07);
+		*cp++ = 0x80|((value>>12)&0x3F); *cp++ = 0x80|((value>>6)&0x3F); *cp++ = 0x80|(value&0x3F);
+		}
+	return(cp);
+	}
+
+int uc_faults(char *ustr) {
+	int faults=0;
+	uc_scan(ustr,-1,-1,NULL,&faults);
+	return(faults);
+	}
+
+#define class Int4
+CodaClassZerosC();
+CodaClass(Int4,int4,Root);
+
+class Int4_Value(int4 value) {
+	class self=newO(class); *self=value; return(self);
+	}
+
+class $(NewBlock,int count,pointer address) {
+	if (count<=0) return(0);
+	self=newOC(class,count); cs_blockCopy(self,address,count*sizeat(class)); return(self);
+	}
+
+Char $(Info) { return Char_F("%s[%d]=(%d,...), aka int4*",kindO(self),Int4_count(self),*self); }
+
+Char $(ToDelimiter,int index) {
+	static Char da[]={ Os(", "), Os("<int4>["), Os("]"), Os("?") }; return da[index&3];
+	}
+
+Char $(ToStringSub,int index) { return Char_F("%d",self[index]); }
+
+Char $(ToString) { return Char_F("%d",*self); }
+
+$boot(StephenMJones) {
+	CodaSig(Info); CodaSig(NewBlock);
+	CodaSig(ToString); CodaSig(ToDelimiter); CodaSig(ToStringSub);
+	}
+
+int $(length) {
+	if (!self) return(0);
+	int len=0; for(;self[len];++len) ;
+	return(len);
+	}
+#undef class
+
+#define class Short
+CodaClassZerosC(); CodaClass(Short,short,Root);
+
+class Short_Value(short value) {
+	class self=newO(class); *self=value; return(self);
+	}
+
+class $(NewBlock,int count,pointer address) {
+	if (count<=0) return(0);
+	self=newOC(class,count); cs_blockCopy(self,address,count*sizeat(class)); return(self);
+	}
+
+Char $(Info) { return Char_F("%s[%d]=(%d,...) aka short*",kindO(self),Short_count(self),*self); }
+
+Char $(ToDelimiter,int index) {
+	static Char da[]={ Os(", "), Os("<short>["), Os("]"), Os("?") }; return da[index&3];
+	}
+
+Char $(ToStringSub,int index) { return Char_F("%d",self[index]); }
+
+Char $(ToString) { return Char_F("%d",*self); }
+
+$boot(StephenMJones) {
+	CodaSig(Info); CodaSig(NewBlock);
+	CodaSig(ToString); CodaSig(ToDelimiter); CodaSig(ToStringSub);
+	}
+
+int $(length) {
+	if (!self) return(0);
+	int len=0; for(;self[len];++len) ;
+	return(len);
+	}
+#undef class
+
+int u2_codes(pointer u2str) {
+	return u2_scan(u2str,-1,-1,NULL,NULL);
+	}
+
+int u2_count(pointer u2str,int codes) {
+	int shorts=0;
+	u2_scan(u2str,-1,codes,&shorts,NULL);
+	return(shorts);
+	}
+
+int u2_scan(pointer u2str,int countOrNeg1,int codes,int *counter,int *faults) {
+	unsigned short *str=u2str;
+	int haslimit=(codes>=0);
+	codes&=0x7FFFFFFF;
+	int len,extra=0,utfch=0,fault=0;
+	for(len=0;1;++len) {
+		if (countOrNeg1>=0 && len>=countOrNeg1) break;
+		int cc=str[len]; if (countOrNeg1<0 && !cc) break;
+		int oldutflen=utfch;
+		if (0xDC00==(cc&0xFC00)) {
+			if (extra==1) { extra=0; ++utfch; }
+			else       	  ++fault;
+			}
+		else {
+			if (extra)  { extra=0; ++fault;
+				if (utfch+fault>codes) { --fault; break; }
+				}
+			if (0xD800==(cc&0xFC00)) extra=1;
+			else					 ++utfch;
+			}
+		if (haslimit) {
+			if (utfch+fault+extra>codes) {
+				if (oldutflen!=utfch) --utfch; else --fault;
+				break;
+				}
+			}
+		}
+	if (extra) ++fault;
+	if (counter) *counter=len;
+	if (faults) *faults=(fault);
+	return(utfch+fault);
+	}
+
+pointer u2_encode(pointer ptr,int4 value,pointer context) {
+	if (!ptr) {
+		if (!value) return Class_Short;
+		return(context);
+		}
+	value&=0x1FFFFF;
+	short* sp=ptr;
+	if (value<0x10000) { *sp++ =value; }
+	else {
+		value-=0x10000;
+		*sp++ = 0xD800|((value>>10)&0x3FF);
+		*sp++ = 0xDC00|( value     &0x3FF);
+		}
+	return(sp);
+	}
+
+pointer u4_encode(pointer ptr,int4 value,pointer context) {
+	if (!ptr) {
+		if (!value) return Class_Int4;
+		return(context);
+		}
+	value&=0x1FFFFF;
+	int4* ip=ptr;
+	*ip++ =value;
+	return(ip);
+	}
+
+Obj uN_Convert(int isizeN,UcEncoder encoder,pointer context,pointer uNstr, int countOrNeg1,int *faults) {
+
+	if (countOrNeg1<0) {
+		if (isizeN==1) countOrNeg1=cs_length(uNstr);
+		ei (isizeN==2) countOrNeg1=Short_length(uNstr);
+		else		   countOrNeg1=Int4_length(uNstr);
+		}
+	int maxBytes=4*countOrNeg1+4;
+	Char buffer=encoder(0,maxBytes,context);
+	cleanO Char temp=(buffer?0:newOC(Char,maxBytes));
+	if (!buffer) buffer=temp;
+	char* cp=buffer; int fault=0,value=0;
+	if (isizeN==1) {
+		int extra=0;
+		for(int len=0;len<countOrNeg1;++len) {
+			int cc=((unsigned char*)uNstr)[len];
+			if (0x80==(cc&0xC0)) {
+				if (extra) { --extra;
+					value=(value<<6)|(cc&0x3F);
+					if (extra==0) { cp=encoder(cp,value,context); }
+					}
+				else { ++fault; cp=encoder(cp,cc,context); }
+				}
+			else {
+				if (extra) { ++fault; cp=encoder(cp,value<<(6*extra),context); extra=0; }
+				if (0x00==(cc&0x80)) { cp=encoder(cp,cc,context); }
+				ei (0xC0==(cc&0xE0)) { extra=1; value=cc&0x1F; }
+				ei (0xE0==(cc&0xF0)) { extra=2; value=cc&0x0F; }
+				ei (0xF0==(cc&0xF8)) { extra=3; value=cc&0x07; }
+				else 		{ ++fault; cp=encoder(cp,cc,context); }
+				}
+			}
+		if (extra)  { ++fault; cp=encoder(cp,value<<(6*extra),context); };
+		}
+	ei (isizeN==2) {
+		int extra=0;
+		for(int len=0;len<countOrNeg1;++len) {
+			int cc=((unsigned short*)uNstr)[len];
+			if (0xDC00==(cc&0xFC00)) {
+				if (extra) { cp=encoder(cp,((extra&0x3FF)<<10|(cc&0x3FF))+0x10000,context); extra=0; }
+				else       { ++fault; cp=encoder(cp,cc,context); }
+				}
+			else {
+				if (extra)  { ++fault; cp=encoder(cp,extra,context); extra=0; }
+				if (0xD800==(cc&0xFC00)) { extra=cc; }
+				else		{ cp=encoder(cp,cc,context); }
+				}
+			}
+		if (extra)  { ++fault; cp=encoder(cp,extra,context); }
+		}
+	else {
+		for(int len=0;len<countOrNeg1;++len) {
+			cp=encoder(cp,((int4*)uNstr)[len],context);
+			}
+		}
+	if (faults) *faults=(fault);
+	cp=encoder(cp,0,context);
+	Obj proto=encoder(0,0,context);
+	if (proto) { int4 size=(cp-buffer); CodaCLASS *clas=classO(proto);
+		int nel=(size/clas->size);
+		return obj_(NewBlock,proto,nel,buffer);
+		}
+	return(NULL);
+	}
+
+Short uc_ToU2(char *u1str,int countOrNeg1,int *faults) {
+	return uN_Convert(1,u2_encode,NULL,u1str,countOrNeg1,faults);
+	}
+
+Int4 uc_ToU4(char *u1str,int countOrNeg1,int *faults) {
+	return uN_Convert(1,u4_encode,NULL,u1str,countOrNeg1,faults);
+	}
+
+Char u2_ToUc(pointer u2str,int countOrNeg1,int *faults) {
+	return uN_Convert(2,uc_encode,NULL,u2str,countOrNeg1,faults);
+	}
+
+Int4 u2_ToU4(pointer u2fstr,int countOrNeg1,int *faults) {
+	return uN_Convert(2,u4_encode,NULL,u2fstr,countOrNeg1,faults);
+	}
+
+Char u4_ToUc(pointer u4str,int countOrNeg1,int *faults) {
+	return uN_Convert(4,uc_encode,NULL,u4str,countOrNeg1,faults);
+	}
+
+Short u4_ToU2(pointer u4str,int countOrNeg1,int *faults) {
+	return uN_Convert(4,u2_encode,NULL,u4str,countOrNeg1,faults);
+	}
+
 CodaClassDef(Bool,_Bool,Root);
 CodaClassDef(Data,void,Root);
 CodaClassDef(DateString,char,Char);
@@ -1541,12 +1873,15 @@ CodaClassDef(Real,double,Root);
 	PLIST_NoEncoding=32,
 	PLIST_NoDoctype=64,
 	PLIST_NoPVersion=128,
-	PLIST_Binary=2048,
+	PLIST_Coda_C     =1<<10,
+	PLIST_Binary     =1<<11,
 	PLIST_ObjectStream=4096,
+	PLIST_Json       =1<<13,
+	JSON_Pretty      =1<<14,
+	PLIST_Strict     =1<<15,
 	PLIST_ITUNES= ( PLIST_UnsortedDict | PLIST_AddComputer | PLIST_Amp38 ),
 	};
 	#define Real_count Root_get_count
-	typedef pointer (*UcEncoder)(pointer ptr,int4 value,pointer context);
 Data Array_ToData(Array array);
 extern char Data_base64s[];
 int Data_base64decode(char *dp,int dlen,char *sp,int slen);
@@ -1591,6 +1926,8 @@ int FileMem_oRead(FileMem self,char *buffer,int length);
 Huge Huge_Value(huge value);
 Huge Huge_NewBlock(Huge self,int count,pointer address);
 HugeUID HugeUID_Value(huge value);
+Void JsonNull_Value(void);
+bool isa_JsonNull(Obj obj);
 Obj OErrorSet(Obj $CONSUMED obj);
 Obj OErrorObject(void);
 Char OError(void);
@@ -1607,11 +1944,6 @@ void PList_Binary(void);
 void pointer_sort(pointer base,int nel,void *IfunVVC,void *context);
 Real Real_Value(double value);
 Real Real_NewBlock(Real self,int count,pointer address);
-int uc_codes(char* ustr);
-int uc_count(char *ustr,int codes);
-int uc_scan(char *ustr,int lenOrNeg1,int codes,int *counter,int *faults);
-pointer uc_encode(pointer ptr,int4 value,pointer context);
-int uc_faults(char *ustr);
 
 bool cc_isCap(int c)   { return( c>='A' && c<= 'Z' ); }
 bool cc_isLow(int c)   { return( c>='a' && c<= 'z' ); }
@@ -2153,6 +2485,10 @@ $boot(StephenMJones) {
 	}
 #undef class
 
+Void JsonNull_Value() { return alocO(1); }
+
+bool isa_JsonNull(Obj obj) { return( isa_(obj,Void) && sizeO(obj)==1 );  }
+
 	static char *xmlkeya[]={"amp;","lt;","gt;","quot;","apos;",NULL};
 	static char  xmlchra[]="&<>\"\'";
 
@@ -2220,7 +2556,7 @@ char* PList_stringEncode(int bufsize,char *buffer,char *a,Char *extra,bool amp38
 	bufsize-=6;
 	if (extra) {
 		int size=encodedLength(a)+1;
-		if (size>bufsize) { bufsize=size; buffer=alocC(size); *extra=buffer; }
+		if (size>bufsize) { bufsize=size; buffer=alocO(size); *extra=buffer; }
 		}
 	int k=0;
 	for(int j=0;a[j];++j) {
@@ -2318,14 +2654,11 @@ bool PList_leafClass(Obj obj,bool apple) {
 $boot(PList) { PList_leafs_init(); }
 
 	#define ALEN 4096
-	#define BLEN (ALEN+ALEN)
 
 	typedef struct PLPTR1_ {
 		unsigned char* blob;
 		int lno,pos,blobNel,iLevel;
-		char a[ALEN+16],b[BLEN+16];
-		oPrintf oprintf;
-		Obj stream;
+		char a[ALEN+16];
 		bool apple;
 		} *PLPTR1;
 	#undef  Self
@@ -2455,7 +2788,8 @@ $boot(PList) { PList_leafs_init(); }
 		if (temp) *extra=keepO(temp);
 		return(self);
 		}
-				static pointer ptrLoadItem(Self self,char *ender,int top) ;
+	static Char aNull=Os("<null>");
+				static pointer ptrLoadItem(Self self,char *ender) ;
 	static pointer ptrLoadDict(Self self,Dictionary dict) {
 		while(1)	{
 			if (!ptrToken(self,0)) return(0);
@@ -2467,24 +2801,21 @@ $boot(PList) { PList_leafs_init(); }
 				cs_strcopy(key,_ a);
 			if (!ptrToken(self,1)) return(0);
 			if (!cs_exact(_ a,"/key")) abortP("DictLoad: key ending token error </key> got <%s>",_ a);
-			Obj obj=ptrLoadItem(self,0,0); if (!obj) return(0);
-				Dict_set(dict,key,obj);
-				freeO(obj);
+			Obj obj=ptrLoadItem(self,0); if (!obj) return(0);
+			if (obj==aNull) obj=JsonNull_Value();
+			Dict_take(dict,key,obj);
 			}
 		return("OK");
 		}
 	#undef ALEN
-	#undef BLEN
-	static Char aNull=Os("<null>");
 
 	static pointer ptrLoadArray(Self self,Array array) {
 		for(int j=0;1;++j)	{
 			static Char ender=Os("/array");
-			Obj obj=ptrLoadItem(self,ender,0); if (!obj) return(0);
+			Obj obj=ptrLoadItem(self,ender); if (!obj) return(0);
 			if (obj==ender) break;
 			if (obj==aNull) obj=0;
-				Array_addObject(array,obj);
-				freeO(obj);
+			Array_take(array,obj);
 			}
 		return("OK");
 		}
@@ -2494,7 +2825,7 @@ $boot(PList) { PList_leafs_init(); }
 		}
 	static void SelfNOP(Self junk) { }
 
-	static Obj ptrLoadItem(Self self,char *ender,int top) {
+	static Obj ptrLoadItem(Self self,char *ender) {
 		if (++_ iLevel>MAXioLevel) OAbort("too many levels(%d). Circular?",_ iLevel);
 		const $CLEANUP(decLevel) Self selfcopy= self;
 			SelfNOP(selfcopy);
@@ -2513,6 +2844,10 @@ $boot(PList) { PList_leafs_init(); }
 					freeO(dict);
 					return(uuu);
 					}
+				ei (cs_exact("CF$Null",key->word) && isa_(key->item,Bool)) {
+					freeO(dict);
+					return aNull;
+					}
 				}
 			return dict;
 			}
@@ -2527,7 +2862,7 @@ $boot(PList) { PList_leafs_init(); }
 			if (!ptrToken(self,1)) return(0);
 			if (*_ a!='/' || !cs_exact(_ a+1,"keyword"))
 				abortP("Keyword: end token </%s> got <%s>","keyword",_ a);
-			Obj obj=ptrLoadItem(self,0,0); if (!obj) return(0);
+			Obj obj=ptrLoadItem(self,0); if (!obj) return(0);
 			if (OResponds(obj,set_name)) {
 				obj_(set_name,obj,kkk->word);
 				if (isa_(obj,Array) && cs_exact(kkk->word,Os_Set)) Array_toaSet(obj);
@@ -2543,7 +2878,7 @@ $boot(PList) { PList_leafs_init(); }
 			if (cs_exact("true/", kind)) return Bool_Value(1);
 			if (cs_exact("false/",kind)) return Bool_Value(0);
 			if (cs_exact("string/",kind)) return Char_Value("");
-			if (cs_exact("null/",kind) && ender) return aNull;
+			if (cs_exact("null/",kind)) return aNull;
 			}
 			int toklen=cs_length(kind); if (toklen>60) abortP("token too large(%-20.20s...)",kind);
 			char token[toklen+1]; cs_strcopy(token,kind);
@@ -2587,7 +2922,7 @@ Obj PList_FromBlock(int count,pointer block,int flags) {
 		}
 	if (!ptrLoadTop(self,&PList_lastLoadTypeThread)) return(0);
 
-	cleanO Obj obj=ptrLoadItem(self,0,1); if (!obj) return(0);
+	cleanO Obj obj=ptrLoadItem(self,0); if (!obj) return(0);
 		if (!ptrToken(self,0)) return(0);
 		if (cs_exact(_ a,"/plist"))    ;
 		ei (cs_exact(_ a,"/codalist")) ;
@@ -2646,6 +2981,7 @@ Obj PList_toStream(Obj stream,Obj container,int flags) {
 		ePrintf("</plist>\n");
 		}
 	  else	{
+		if (!(flags & PLIST_NoDoctype))
 		ePrintf("<!DOCTYPE codalist SYSTEM \"http:/" "/www.coda-c.com/dtds/codalist.dtd\">\n");
 		ePrintf("<codalist>\n");
 		if (!saveItem(self,container,2,-1)) return(0);
@@ -2663,17 +2999,30 @@ Obj PList_toStream(Obj stream,Obj container,int flags) {
 
 	static void Data2_PLData2os(Data obj,Self self,int chunk,int indent,Char str) ;
 
-	static pointer saveAppleUID(Self self,HugeUID obj,int isArray,int indent) {
-		Huge hhh=Huge_Value(*obj);
-		cleanO Dictionary cfuid=newO(Dictionary);
-			Dict_take(cfuid,"CF$UID",hhh);
-		return saveItem(self,cfuid,isArray,indent);
-		}
-
 	static pointer saveLeaf(Self self,Obj obj,int isArray,int indent) {
 		if (!PList_leafClass(obj, hasFlag(PLIST_Apple)) ) {
-			if (hasFlag(PLIST_Apple) && isa_(obj,HugeUID)) {
-				return saveAppleUID(self,obj,isArray,indent);
+			if (isa_(obj,HugeUID)) {
+				HugeUID hhh=obj;
+				cleanO Dictionary cfuid=newO(Dictionary);
+				Dict_take(cfuid,"CF$UID",Huge_Value(*hhh));
+				return saveItem(self,cfuid,isArray,indent);
+				}
+			if (obj==0 || isa_JsonNull(obj)) {
+				if(hasFlag(PLIST_Apple)) {
+					if (hasFlag(PLIST_Strict))
+						OAbort("Strict: <null> is not allowed in Apple XML.");
+					cleanO Dictionary cfnull=newO(Dictionary);
+					Dict_take(cfnull,"CF$Null",Bool_Value(1));
+					return saveItem(self,cfnull,isArray,indent);
+					}
+				  else {
+					int leaf=(isArray==2);
+					int dent=(isArray &1);
+					if (dent && !leaf) { indentEqn(self,indent); ePrintf("\t"); }
+
+					ePrintf("<null/>\n");
+					return(self);
+					}
 				}
 			OAbort("class[%s] is not a supported leaf type.",kindO(obj));
 			}
@@ -2685,25 +3034,29 @@ Obj PList_toStream(Obj stream,Obj container,int flags) {
 		if (!isa_(obj,Data)) {
 			if (!PList_stringEncode(BLEN,_ b,aa,&extra,hasFlag(PLIST_Amp38))) return(0);
 			}
-		cleanC Char temp=extra;
+		cleanO Char temp=extra;
 		char *buffer=(temp?temp:_ b);
 
 		int leaf=(isArray==2);
 		int dent=(isArray &1);
-		if (!isArray && (hasFlag(PLIST_NL4Leafs) || cs_exact("data",kind))) {
+		if (!isArray && (hasFlag(PLIST_NL4Leafs) || isa_(obj,Data))) {
 			ePrintf("\n");
 			dent=1;
 			}
 		if (dent && !leaf) { indentEqn(self,indent); ePrintf("\t"); }
 
-		if (cs_exact("bool",kind)) ePrintf("<%s/>\n",buffer);
-		ei (cs_exact("data",kind)) {
+		if (isa_(obj,Bool)) ePrintf("<%s/>\n",buffer);
+		ei (isa_(obj,Data)) {
 			Data2_PLData2os(obj,self,(_ flags>>16)&0xFFFF,indent+1-leaf,aa);
 			}
 		else ePrintf("<%s>%s</%s>\n",kind,buffer,kind);
 
-		if (hasFlag(PLIST_Apple) && cs_exact("string",kind) && uc_faults(buffer))
+		if (hasFlag(PLIST_Apple) && isa_(obj,Char) && uc_faults(buffer))
 			OAbort("Non-UTF8 string(%s)",buffer);
+
+		if (isa_(obj,DateString)) {
+			if (!DateString_toGmtime(buffer)) return(0);
+			}
 
 		return(self);
 		}
@@ -2720,6 +3073,9 @@ Obj PList_toStream(Obj stream,Obj container,int flags) {
 		}
 
 	static pointer plist3Array(Self self,Array container,int indent) {
+		if (Array_isaSet(container) && hasFlag(PLIST_Strict) && hasFlag(PLIST_Apple)) {
+			OAbort("Strict: <Set> not allowed in Apple PList as <array>.");
+			}
 		indentEqn(self,indent);
 		autoName(self,container);
 		int j,nel=Array_get_count(container);
@@ -2727,12 +3083,6 @@ Obj PList_toStream(Obj stream,Obj container,int flags) {
 		ePrintf("<%s>\n","array");
 		for(j=0;j<nel;++j) {
 			Obj obj=Array_subInt(container,j);
-			if (!obj) {
-				if (hasFlag(PLIST_Apple)) OAbort("Nulls not allowed in Apple PList for <array>.");
-				{ indentEqn(self,indent); ePrintf("\t"); }
-				ePrintf("<null/>\n");
-				continue;
-				}
 			if (!saveItem(self,obj,1,indent)) return(0);
 			}
 		indentEqn(self,indent);
@@ -2901,80 +3251,6 @@ $boot(StephenMJones) {
 	}
 #undef class
 
-int uc_codes(char* ustr) {
-	return uc_scan(ustr,-1,-1,NULL,NULL);
-	}
-
-int uc_count(char *ustr,int codes) {
-	int bytes=0;
-	uc_scan(ustr,-1,codes,&bytes,NULL);
-	return(bytes);
-	}
-
-int uc_scan(char *ustr,int lenOrNeg1,int codes,int *counter,int *faults) {
-	unsigned char *str=(unsigned char *)ustr;
-	int haslimit=(codes>=0);
-	codes&=0x7FFFFFFF;
-	int len,extra=0,utfch=0,fault=0;
-	for(len=0;1;++len) {
-		if (lenOrNeg1>=0 && len>=lenOrNeg1) break;
-		int cc=str[len]; if (lenOrNeg1<0 && !cc) break;
-		int oldutflen=utfch;
-		if (0x80==(cc&0xC0)) {
-			if (extra==1) { extra=0; ++utfch; }
-			ei (extra>0)  --extra;
-			else       	  ++fault;
-			}
-		else {
-			if (extra)  { extra=0; ++fault;
-				if (utfch+fault>codes) { --fault; break; }
-				}
-			if (0x00==(cc&0x80)) { ++utfch; }
-			ei (0xC0==(cc&0xE0)) { extra=1; }
-			ei (0xE0==(cc&0xF0)) { extra=2; }
-			ei (0xF0==(cc&0xF8)) { extra=3; }
-			else 				 { ++fault; }
-			}
-		if (haslimit) {
-			int parto=(extra ? 1:0);
-			if (utfch+fault+parto>codes) {
-				if (oldutflen!=utfch) --utfch; else --fault;
-				break;
-				}
-			}
-		}
-	if (extra) ++fault;
-	if (counter) *counter=len;
-	if (faults) *faults=(fault);
-	return(utfch+fault);
-	}
-
-pointer uc_encode(pointer ptr,int4 value,pointer context) {
-	if (!ptr) {
-		if (!value) return Class_Char;
-		return(context);
-		}
-	unsigned char* cp=ptr;
-	value&=0x1FFFFF;
-	if (value<0x80)    { *cp++ = value; }
-	ei (value<0x800)   { *cp++ = 0xC0|((value>> 6)&0x1F);
-		*cp++ = 0x80|(value&0x3F);
-		}
-	ei (value<0x10000)  { *cp++ = 0xE0|((value>>12)&0x0F);
-		*cp++ = 0x80|((value>>6)&0x3F); *cp++ = 0x80|(value&0x3F);
-		}
-	else 			   { *cp++ = 0xF0|((value>>18)&0x07);
-		*cp++ = 0x80|((value>>12)&0x3F); *cp++ = 0x80|((value>>6)&0x3F); *cp++ = 0x80|(value&0x3F);
-		}
-	return(cp);
-	}
-
-int uc_faults(char *ustr) {
-	int faults=0;
-	uc_scan(ustr,-1,-1,NULL,&faults);
-	return(faults);
-	}
-
 static CDictionary Plugin_dictionary_dict=0;
 
 CDictionary Plugin_dictionary() {
@@ -3041,17 +3317,17 @@ void Object_leaks_cleaner(void *vp) {
 void Object_leaks_NOP(pointer junk) { }
 
 Char obj_xmlTag(Obj obj) {
-	if (!OResponds(obj,xmlTag)) OAbort("object does not repond to 'xmlTag'.");
+	if (!OResponds(obj,xmlTag)) OAbort("object does not respond to 'xmlTag'.");
 	return obj_(xmlTag,obj);
 	}
 
 Char obj_ToString(Obj obj) {
-	if (!OResponds(obj,ToString)) OAbort("object does not repond to 'ToString'.");
+	if (!OResponds(obj,ToString)) OAbort("object does not respond to 'ToString'.");
 	return obj_(ToString,obj);
 	}
 
 Char obj_FromString(Obj obj,char *string) {
-	if (!OResponds(obj,FromString)) OAbort("object does not repond to 'FromString'.");
+	if (!OResponds(obj,FromString)) OAbort("object does not respond to 'FromString'.");
 	return obj_(FromString,obj,string);
 	}
 
@@ -3068,5 +3344,594 @@ void defer_call_cleanup(void *vp) {
 		void (*fun)(pointer)=self[0];
 		if (fun) fun(self[1]);
 		}
+	}
+
+	enum { UTF8max=0x10FFFF, };
+int4 Json_lastLoadType(void);
+Obj Json_FromBlock(int count,pointer block,int flags);
+Obj Json_toStream(Obj stream,Obj container,int flags);
+Obj Json_save(char *file,Obj container,int flags);
+Obj Json_Load(char *file,int flags);
+
+	#define ALEN 4096
+
+	typedef struct PLPTR5_ {
+		unsigned char* blob;
+		int lno,pos,blobNel,iLevel,flags;
+		char a[ALEN+16];
+		} *PLPTR5;
+	#undef  Self
+	#define Self PLPTR5
+
+	enum { MAXjiLevel=100, };
+
+	#define hasFlag(bitflag) (self->flags & bitflag)
+
+	static pointer jsonAbort(Self self,Char msg) {
+		Error_F("line %d: %s",_ lno+1,msg);
+		freeO(msg); msg=0;
+		return(0);
+		}
+
+	#undef  abortP
+  	#define abortP(...)	return(jsonAbort(self,Char_F(__VA_ARGS__)))
+
+	static int jsn_getCc(Self self) {
+		if (_ pos >= _ blobNel) return(EOF);
+		int cc=_ blob[_ pos++];
+		if (cc=='\n') ++_ lno;
+		return(cc);
+		}
+	static void jsn_ungetCc(Self self,int count) {
+		_ pos-=count;
+		if (_ pos<0) _ pos=0;
+		}
+
+	static ConstChar kColon=Os(":");
+	static ConstChar kComma=Os(",");
+
+	static int jsn_ltSize(Self self,int thequote) {
+		int backs=0;
+		for(int j=_ pos; j< _ blobNel;++j) {
+			int cc= _ blob[j];
+			if (cc==thequote && (backs&1)==0) return(j - _ pos);
+			if (cc=='\\') ++backs;
+			  else        backs=0;
+			}
+		return(EOF);
+		}
+	static pointer gethex4(Self self,int *cpointptr) {
+		char buf[8];
+		for(int j=0;j<4;++j) {
+			int cc=jsn_getCc(self); if (cc==EOF) abortP("EOF Hex[%d]",j);
+			if ( (cc>='0' && cc<='9') || (cc>='a' && cc<='z') || (cc>='A' && cc<='Z') ) ;
+			else abortP("Bad Hex[%d]= #%d",j,cc);
+			buf[j]=cc;
+			}
+		buf[4]=0;
+		*cpointptr=(int)strtoll(buf,0,16);
+		return(self);
+		}
+
+	static pointer jsnLoadKey(Self self,Char *extra,int thequote) {
+		int cc,p=0;
+		int size=jsn_ltSize(self,thequote); if (size==EOF) abortP("EOF loading KEY.");
+		cleanO Char temp=(size<=ALEN ? 0 : newOC(Char,size+8));
+		if (temp && !extra) abortP("Item too large: %d w/o extra",size);
+		char *buffer=(temp ? temp : _ a);
+		int backs=0;
+		while(1) {
+			cc=jsn_getCc(self); if (cc==EOF) abortP("EOF in LoadKey.(NEVER)");
+			if (cc==thequote && (backs&1)==0) break;
+			if (cc=='\\' && !backs) { ++backs; continue; }
+			if (backs) { backs=0;
+				if (cc=='b') cc='\b';
+				ei (cc=='f') cc='\f';
+				ei (cc=='t') cc='\t';
+				ei (cc=='r') cc='\r';
+				ei (cc=='n') cc='\n';
+				ei (cc=='u') {
+					int cpoint=0; if (!gethex4(self,&cpoint)) return(0);
+					if (0xD800==(cpoint &0xFC00)) {
+						cc=jsn_getCc(self);
+						if (cc!='\\') {
+							if (cc!=EOF) jsn_ungetCc(self,1);
+							}
+						  else {
+							int c2=jsn_getCc(self);
+							if (c2!='u') {
+								jsn_ungetCc(self,c2!=EOF ? 2 : 1);
+								}
+							  else {
+								int lowsur=0; if (!gethex4(self,&lowsur)) return(0);
+								if (0xDC00!=(lowsur &0xFC00)) abortP("Bad low surrogate 0x%04x",lowsur);
+								cpoint=(((cpoint &0x3FF)<<10 | (lowsur &0x3FF))+0x10000);
+								}
+							}
+						}
+					ei (0xDC00==(cpoint &0xFC00)) {
+						}
+					ei (cpoint==0) {
+						cpoint=UTF8max;
+						}
+					if (p+4>=size) abortP("String too large. %d (extra %p) Never?",p,extra);
+					char *buff=buffer+p;
+					char *endcp=uc_encode(buff,cpoint,0);
+					int len=endcp-buff; if (len<1 || len>4) len=0;
+					p+=len;
+					continue;
+					}
+				}
+			if (p>=size) abortP("Key|Item too large. %d (extra %p) NEVER",p,extra);
+			buffer[p++]=cc;
+			}
+		buffer[p]=0;
+		if (uc_faults(buffer)) abortP("Non-UTF8 dict:key(%s)",buffer);
+		if (temp) *extra=keepO(temp);
+		return(self);
+		}
+
+	#undef ALEN
+
+				static pointer jsnLoadItem(Self self,char *ender,bool top) ;
+	static pointer jsnLoadDict(Self self,Dictionary dict) {
+		while(1)	{
+			static Char ender=Os("}");
+			cleanO Obj key=jsnLoadItem(self,ender,0); if (!key) return(0);
+			if (key==ender) break;
+			if (!isa_(key,Char)) abortP("Bad Dictionary key?");
+
+			cleanO Obj colon=jsnLoadItem(self,0,0); if (!colon) return(0);
+			if (colon!=kColon) {
+				cleanO Char msg=ToContainer(colon);
+				abortP("Dict: missing colon? ( %s )",msg);
+				}
+
+			cleanO Obj obj=jsnLoadItem(self,0,0); if (!obj) return(0);
+			Dict_set(dict,key,obj);
+			cleanO Obj comma=jsnLoadItem(self,ender,0); if (!comma) return(0);
+			if (comma==ender) break;
+			if (comma!=kComma) {
+				cleanO Char msg=ToContainer(comma);
+				abortP("Dict: missing comma? ( %s )",msg);
+				}
+			}
+		return("OK");
+		}
+
+	static pointer jsnLoadArray(Self self,Array array) {
+		for(int j=0;1;++j)	{
+			static Char ender=Os("]");
+			Obj obj=jsnLoadItem(self,ender,0); if (!obj) return(0);
+			if (obj==ender) break;
+			if (obj==kComma) continue;
+			if (obj==kColon) OAbort("Colon in array?");
+			if (isa_JsonNull(obj)) obj=0;
+			Array_take(array,obj);
+			}
+		return("OK");
+		}
+	static pointer ptrHex(Self self) {
+		int j=0;
+		for(j=0;j+_ pos < _ blobNel && j<63;++j) {
+			int cc= cc_toCap(_ blob[j+_ pos]);
+			if (cc>='0' && cc<='9') ;
+			ei (cc>='A' && cc<='F') ;
+			else break;
+			}
+		Char string=alocS(j+1); cs_blockCopy(string,_ blob+ _ pos,j);
+		_ pos +=j;
+		huge ival=strtoll(string,0,16);
+		return Huge_Value(ival);
+		}
+
+	static pointer ptrNumber(Self self) {
+		int c1=jsn_getCc(self);
+		int c2=jsn_getCc(self);
+		if (c1=='0' && c2=='x') return ptrHex(self);
+		jsn_ungetCc(self,c2==EOF ? 1 : 2);
+
+		int j=0;
+		for(j=0;j+_ pos < _ blobNel && j<127;++j) {
+			int cc= _ blob[j+_ pos];
+			if (cc>='0' && cc<='9') ;
+			ei (cc=='-' || cc=='.' || cc=='e' || cc=='E' || cc=='+') ;
+			else break;
+			}
+		Char string=alocS(j+1); cs_blockCopy(string,_ blob+ _ pos,j);
+		_ pos +=j;
+		double dval=strtod(string,0);
+
+		char buf[64]; snprintf(buf,sizeof(buf),"%.16g",dval);
+		bool isreal=cc_inString('.',buf);
+		if (isreal) return Real_Value(dval);
+		return Huge_Value(llround(dval));
+		}
+		Data Data_FromString(Data self,char *string);
+		DateString DateString_FromString(DateString self,char *str);
+
+	static bool nameCc(int cc,bool notfirst) {
+		cc&=0xFF;
+		if (cc>127) return(1);
+		if ( (cc>='a' && cc<='z') || (cc>='A' && cc<='Z') || cc=='_' || cc=='$') return(1);
+		if (notfirst && (cc>='0' && cc<='9') ) return(1);
+		return(0);
+		}
+
+	static void jsndecLevel(const void *vp) {
+		Self self=(*(Self*)vp);
+		--_ iLevel;
+		}
+	static void jsnSelfNOP(Self junk) { }
+
+	static Obj jsnLoadItem(Self self,char *ender,bool top) {
+		if (++_ iLevel>MAXjiLevel) OAbort("too many levels(%d). Circular?",_ iLevel);
+		const $CLEANUP(jsndecLevel) Self selfcopy= self;
+			jsnSelfNOP(selfcopy);
+
+		int cc=jsn_getCc(self);
+		while(cc==32 || cc=='\t' || cc=='\r' || cc=='\n') cc=jsn_getCc(self);
+
+		if (ender && *ender==cc) return(ender);
+
+		if (cc=='{') {
+			Dictionary dict=newO(Dictionary);
+			if (!jsnLoadDict(self,dict)) { freeO(dict); return(0); }
+
+			if (Dictionary_count(dict)==1 && !hasFlag(PLIST_Strict)) {
+				Keyword key=Dictionary_scan(dict);
+				if (cs_exact("CF$UID",key->word) && isa_(key->item,Huge)) {
+					Huge rrr=key->item;
+					HugeUID uuu=HugeUID_Value( *rrr );
+					freeO(dict);
+					return(uuu);
+					}
+				ei (cs_exact("CF$Date",key->word) && isa_(key->item,Char)) {
+					Obj ret=DateString_FromString(0,key->item);
+					freeO(dict);
+					return(ret);
+					}
+				ei (cs_exact("CF$Data",key->word) && isa_(key->item,Char)) {
+					Obj ret=Data_FromString(0,key->item);
+					freeO(dict);
+					return(ret);
+					}
+				}
+			return dict;
+			}
+		if (cc=='[') {
+			Array array=newO(Array);
+			if (!jsnLoadArray(self,array)) { freeO(array); return(0); }
+			return array;
+			}
+
+		if (cc==':') return kColon;
+		if (cc==',') return kComma;
+
+		if (cc=='\"' || cc=='\'') {
+			Char extra=0;
+			if (!jsnLoadKey(self,&extra,cc)) return(0);
+			return(extra ? extra : Char_Value(_ a));
+			}
+
+		if (cc_inString(cc,"0123456789-.+")) {
+			jsn_ungetCc(self,1);
+			return ptrNumber(self);
+			}
+
+		if (nameCc(cc,0)) {
+			char name[128]={cc};
+			int j=0;
+			for(j=1;j<sizeof(name)-1;++j) {
+				cc=jsn_getCc(self); if (cc==EOF) break;
+				if (!nameCc(cc,1)) { jsn_ungetCc(self,1); break; }
+				name[j]=cc;
+				}
+			name[j]=0;
+			if (cs_exact(name,"true"))  return Bool_Value(1);
+			if (cs_exact(name,"false")) return Bool_Value(0);
+			if (cs_exact(name,"null"))  return JsonNull_Value();
+			if (top) OAbort("unquoted string as only/top object? (%s)",name);
+			return Char_Value(name);
+			}
+
+		if (cc=='/') {
+			cc=jsn_getCc(self);
+			bool toeol=(cc=='/');
+			if (!toeol && cc!='*') abortP("Comment start? Slash with out Slash or asterisk.");
+			int stars=0;
+			while(1) {
+				cc=jsn_getCc(self); if (cc==EOF) break;
+				if (toeol && cc=='\n') break;
+				if (!toeol) {
+					if (stars && cc=='/') break;
+					if (cc=='*') ++stars;
+					  else         stars=0;
+					}
+				}
+			return jsnLoadItem(self,ender,top);
+			}
+
+		abortP("Bad char: 0x%02x?",cc);
+		}
+
+	static __thread int4 Json_lastLoadTypeThread=0;
+int4 Json_lastLoadType() { return(Json_lastLoadTypeThread); }
+
+Obj Json_FromBlock(int count,pointer block,int flags) {
+	if (!block) OAbort("Null data!");
+
+	bool redirect=(count>8 && 0==cs_blockCmp(block,"bplist00",8));
+
+	if (!redirect) {
+		for(int j=0;j<count;++j) {
+			int cc= *(Char)(block+j);
+			if (!cc) OAbort("null char found at pos %d?",j);
+			}
+		}
+
+	if (!redirect) {
+		for(int j=0;j<count;++j) {
+			int cc= *(Char)(block+j);
+			if (cc_isWhite(cc)) ;
+			ei (cc=='<') { redirect=1; break; }
+			else break;
+			}
+		}
+	if (redirect) {
+		Obj obj=PList_FromBlock(count,block,flags);
+		if (obj) {
+			int flags=PList_lastLoadType();
+			if (0==(flags & (PLIST_Apple|PLIST_Binary))) flags|=PLIST_Coda_C;
+			Json_lastLoadTypeThread=PList_lastLoadType();
+			}
+		return(obj);
+		}
+
+	Self self=alocS(sizeat(Self));
+		_ blob=block;
+		_ blobNel=count;
+		_ flags=flags;
+	Obj obj=jsnLoadItem(self,0,1);
+	if (obj) Json_lastLoadTypeThread=PLIST_Json;
+	return(obj);
+	}
+
+static int json_encodedLength(char *a) {
+	int len=0;
+	for(int j=0;a[j];++j) {
+		int cc=a[j]&0xFF;
+		if (cc=='/' || cc=='\\' || cc=='"') len+=2;
+		ei (cc<32) len+=6;
+		else ++len;
+		}
+	return(len);
+	}
+
+char* Json_stringEncode(int bufsize,char *buffer,char *a,Char *extra) {
+	bufsize-=4;
+	if (extra) {
+		int size=json_encodedLength(a)+1;
+		if (size>bufsize) { bufsize=size; buffer=alocO(size); *extra=buffer; }
+		}
+	int k=0;
+	for(int j=0;a[j];++j) {
+		int cc=a[j]&0xFF;
+		if (k>=bufsize) OAbort("%s; overflow %d.",__func__,k);
+		if (cc=='/' || cc=='\\' || cc=='"') buffer[k++]='\\';
+		ei (cc<32) {
+			buffer[k++]='\\';
+			if (cc=='\t') cc='t';
+			ei (cc=='\n') cc='n';
+			ei (cc=='\r') cc='r';
+			ei (cc=='\f') cc='f';
+			ei (cc=='\b') cc='b';
+			else {
+				char temp[16]; snprintf(temp,sizeof(temp),"u%04X",cc);
+				if (k+6>=bufsize) OAbort("%s; Overflow %d.",__func__,k);
+				cs_copy(buffer+k,temp);
+				k+=cs_length(temp);
+				continue;
+				}
+			}
+		buffer[k++]=cc;
+		}
+	buffer[k]=0;
+	return(buffer);
+	}
+
+	#define BLEN (4096+4096)
+	typedef struct PLPTR6_ {
+		int  iLevel,flags,indent;
+		char b[BLEN+16];
+		oPrintf oprintf;
+		Obj stream;
+		} *PLPTR6;
+	#undef  Self
+	#define Self PLPTR6
+
+	enum { MAXjoLevel=100, };
+
+	#define ePrintf(...) self->oprintf(self->stream,__VA_ARGS__)
+
+	#define hasFlag(bitflag) (self->flags & bitflag)
+	#define isPretty()       (self->flags & JSON_Pretty)
+
+	#define pretty(str) prettySelf(self,str)
+
+	static void prettySelf(Self self,char *str) {
+		if (isPretty()) ePrintf("%s",str);
+		}
+
+	static pointer jsn_saveItem(Self self,Obj obj,int isArray) ;
+
+Obj Json_toStream(Obj stream,Obj container,int flags) {
+	if (!stream)    OAbort("Void stream?");
+	if (!container) OAbort("Void container?");
+
+	if (flags & (PLIST_Coda_C | PLIST_Apple | PLIST_Binary))
+		return PList_toStream(stream,container,flags);
+
+	oPrintf oprintf=(pointer)fprintf;
+	if (flags & PLIST_ObjectStream) {
+		oprintf=OResponds(stream,oPrintf);
+		if (!oprintf) OAbort("stream does not respond to: %s",sig_oPrintf);
+		}
+	Self self=alocS(sizeat(Self));
+		_ flags=flags;
+		_ oprintf=oprintf;
+		_ stream=stream;
+
+	if (!jsn_saveItem(self,container,2)) return(0);
+	pretty("\n");
+	return(container);
+	}
+
+	static pointer jprints(Self self,char *string) {
+		if (uc_faults(string)) OAbort("Non-UTF8 string(%s)",string);
+		ePrintf("\"");
+		while(1) {
+			static char maxutf[]="\xF4\x8F\xBF\xBF";
+			int pos=cs_pos(maxutf,string); if (pos==EOF) break;
+			if (pos>0) { ePrintf("%.*s",pos,string); string+=pos; }
+			ePrintf("\\u0000");
+			string+=4;
+			}
+		ePrintf("%s\"",string);
+		return(self);
+		}
+
+		enum { json_max_dent=60, };
+
+	static void jsn_indentEqn(Self self) {
+		if (!isPretty()) return;
+		char a[json_max_dent*2+8]; int nspace= _ indent*2;
+		int j; for(j=0;j<nspace && j<json_max_dent;++j) a[j]=32;
+		a[j]=0;
+		if (j>0) ePrintf("%s",a);
+		}
+
+		bool PList_leafClass(Obj obj,bool apple) ;
+	static pointer jsn_saveLeaf(Self self,Obj obj,int isArray) {
+		if (!PList_leafClass(obj, 1)) {
+			if (isa_JsonNull(obj)) { ePrintf("null"); return(self); }
+			if (isa_(obj,HugeUID)) {
+				HugeUID hhh=obj;
+				if (hasFlag(PLIST_Strict)) OAbort("Strict: <uid> is not supported in JSON.");
+				ePrintf("{\"CF$UID\":%lld}",*hhh);
+				return(self);
+				}
+			OAbort("class[%s] is not a supported JSON leaf type.",kindO(obj));
+			}
+		cleanO Char aa=obj_ToString(obj);
+		if (!aa) OAbort("class[%s] did not produce a string with 'ToString'.",kindO(obj));
+
+		if (isa_(obj,Bool)) ePrintf("%s",aa);
+		ei (isa_(obj,Real)) {
+			char aaa[64]; snprintf(aaa,sizeof(aaa),"%.16g",*(Real)obj);
+			int cc=aaa[0];
+			if (!cc_inString(cc,"0123456789-.+")) OAbort("Bad Real Value(%s)?",aaa);
+			ePrintf("%s",aaa);
+			}
+		ei (isa_(obj,Huge)) ePrintf("%s",aa);
+		ei (isa_(obj,Data)) {
+			if (hasFlag(PLIST_Strict)) OAbort("Strict: <data> is not supported in JSON.");
+			ePrintf("{\"CF$Data\":\"%s\"}",aa);
+			}
+		ei (isa_(obj,Char)) {
+			Char extra=0;
+			if (!Json_stringEncode(BLEN,_ b,aa,&extra)) return(0);
+			cleanO Char temp=extra;
+			char *buffer=(temp?temp:_ b);
+
+			if (isa_(obj,DateString)) {
+					if (hasFlag(PLIST_Strict)) OAbort("Strict: <date> is not supported in JSON.");
+				   if (!DateString_toGmtime(obj)) return(0);
+		 		   ePrintf("{\"CF$Date\":\"%s\"}",buffer);
+				   }
+			  else {
+				if (!jprints(self,buffer)) return(0);
+				}
+			}
+		else OAbort("class[%s] is not a supported leaf type?",kindO(obj));
+		return(self);
+		}
+
+	static pointer json_3Array(Self self,Array container) {
+		int j,nel=Array_get_count(container);
+		ePrintf("[");
+		++ _ indent;
+		for(j=0;j<nel;++j) {
+			if (j) ePrintf(",");
+			Obj obj=Array_subInt(container,j);
+			pretty("\n"); jsn_indentEqn(self);
+			if (!obj) { ePrintf("null"); continue; }
+			if (!jsn_saveItem(self,obj,1)) return(0);
+			}
+		pretty("\n"); jsn_indentEqn(self);
+		ePrintf("]");
+		-- _ indent;
+		return(self);
+		}
+
+	static pointer json_3Dict(Self self,Dictionary container) {
+		ePrintf("{"); pretty("\n");
+		++_ indent;
+		int j,nel=Dictionary_get_count(container);
+		cleanO Pointer vector=Dictionary_AllKeys(container);
+		if (!hasFlag(PLIST_UnsortedDict)) pointer_sort(vector,nel,strcmp,0);
+		for(j=0;j<nel;++j) {
+			if (j) { ePrintf(","); pretty("\n"); }
+			char *cp=vector[j];
+			Obj obj=Dictionary_subKey(container,cp);
+			if (!obj) OAbort("can't find obj for(%s) internal error? NEVER",cp);
+			if (!Json_stringEncode(BLEN,_ b,cp,0)) return(0);
+			jsn_indentEqn(self);
+			if (!jprints(self,_ b)) return(0);
+			if (isPretty()) ePrintf(" : "); else ePrintf(":");
+			if (!jsn_saveItem(self,obj,0)) return(0);
+			}
+		if (nel) pretty("\n");
+		jsn_indentEqn(self);
+		ePrintf("}");
+		--_ indent;
+		return(self);
+		}
+
+	#undef BLEN
+
+	static pointer jsn_saveItem(Self self,Obj obj,int isArray) {
+		if (++_ iLevel>MAXjoLevel) OAbort("too many levels(%d). Circular?",_ iLevel);
+		if (isa_(obj,Dictionary)) {
+			if (!json_3Dict(self,obj)) return(0);
+			}
+		ei (isa_(obj,Array)) {
+			if (Array_isaSet(obj) && hasFlag(PLIST_Strict)) {
+				OAbort("Strict: <Set> not allowed in JSON as <array>.");
+				}
+			if (!json_3Array(self,obj)) return(0);
+			}
+		else {
+			if (!jsn_saveLeaf(self,obj,isArray)) return(0);
+			}
+		--_ iLevel;
+		return(self);
+		}
+
+Obj Json_save(char *file,Obj container,int flags) {
+	cleanO FileMem fff=FileMem_Open(0); if (!fff) return(0);
+	if (!Json_toStream(fff,container,flags|PLIST_ObjectStream)) return(0);
+	cleanO Data data=FileMem_ToData(fff); if (!data) OAbort("NEVER empty?");
+	FILE *os=fopen(file,"wb"); if (!os) OAbort("can't write file.");
+		huge size=sizeO(data);
+		huge nout=file_write(os,data,size);
+		if (nout!=size) OAbort("WRITE error %d vs %d?",(int)nout,(int)size);
+		if (fclose(os)) OAbort("fclose Error?");
+	return(container);
+	}
+
+Obj Json_Load(char *file,int flags) {
+	cleanO Data data=Data_FromFile(file); if (!data) return(0);
+	return Json_FromBlock(sizeO(data),data,flags);
 	}
 

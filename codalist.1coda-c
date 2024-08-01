@@ -1,0 +1,114 @@
+.Dd July 31, 2024
+.Dt CODALIST "" "Coda-C"
+.Os Multiplatform
+.Sh NAME
+.Nm codalist
+.Nd property list utility (Version 1.0  07/28/2024)
+.Sh SYNOPSIS
+.Nm
+.Op option/file ...
+.Sh DESCRIPTION
+.Nm
+can be used to slice and dice plist files.  Please use -h, -he, and -ho options to review arguments/commands, encoding and new objects.  Each argument is a command, executed in order until all are executed or a FATAL error occurs.
+.Sh EXAMPLES
+	codalist -c # copyright info
+.sp
+	codalist FILE -strict -t # test output format compatibility
+.sp
+	codalist FILE -eb -w # convert FILE to Binary format
+.sp 0
+	codalist FILE -ej -w # convert FILE to JSON format
+.sp 0
+	codalist FILE -ea -w # convert FILE to Apple XML format
+.sp
+The program start up with an empty <dict> and a file name of "new.clist". You can build a plist with commands.
+.sp
+	codalist +/key1=real:12.34 +/key2='"Hello world!"' -ej -w # writes "new.clist"
+.sp
+	codalist +/='{key1:12.34,key2:"Hello world!",key3:[[]]}' # or use JSON5 strings.
+.sp
+JSON allows a dictionary to contain null objects, which is kind of odd and not supported all formats.
+.sp
+	codalist +/='{key1:null,key2:[null]}' -t # test formats for this
+.sp
+Testing    Apple XML: class[Void] is not a supported leaf type.
+.sp 0
+Testing Apple Binary: *** OK ***
+.sp 0
+Testing         JSON: *** OK ***
+.sp
+Note:  Most JSON strings should be single quoted in the shell to prevent alterations/confusion.
+/paths/are/used to access existing items where array must be indexed with an integer or "+" while adding an item.  Oddly because mosts options to programs start with "-" below "+pretty" turns off JSON Pretty mode.
+.sp
+	codalist +/='[[]]' +/0/+=99 +/+=88 -ej +pretty -w:- # ok pretty mode was already off...
+.sp
+	Produces: [[99],88]    # "-" for an output file goes to <stdout>
+.sp
+The default is that at the end of processing, if the file was not written, you get a terse report of the contents.
+.sp
+	codalist +/='[[]]' +/0/+=99 +/+=88  ## Displays:
+.sp 0
+<array[1]>
+.sp 0
+	99
+.sp 0
+88
+.sp
+Dates are highly formatted.
+.sp
+	codalist +/=date:1971-01-01T00:00:00Z -t # is ok.
+.sp 0
+	codalist +/=date:1971-88-01T00:00:00Z -t # is not.
+.sp
+	codalist +/=data:SGVsbG8K -w:- # will write the raw data for single data leaf.
+.sp 0
+	Produces: "Hello\\n"
+.sp
+Items from the current plist my be copied.
+.sp
+	codalist +/='{a:1,b:2,c:3}' +/d=:/b # will copy dict key "b" to new key "d"
+.sp
+Items from plist files may also be copied.
+.sp
+	codalist +/='{color:green,size:42,"haveit":true}' -w:new.clist # write a temp file
+.sp 0
+	codalist +/='{color:blue,haveit:false}' +/size=./new.clist:/size -ej -w:-
+.sp 0
+	Produces: {"color":"blue","haveit":false,"size":42}
+.sp
+Or we might want to delete something.
+.sp
+	codalist +/='{color:blue,haveit:false,size:12}' -/haveit -ej -w:-
+.sp 0
+	{"color":"blue","size":12}
+.sp
+In order to add a null value to a dictionary, use "jsonnull".  Note:  Arrays will accept actual "null".
+.sp
+	codalist +/Name=jsonnull -ej -w:- # -> {"Name":null}
+.sp
+	codalist +/Name=null -ej -w:- # -> {}
+.sp
+And naturally we can print XML.
+.sp
+	codalist +/='{a:1,b:2.3,c:"Grape"}' -ea -w:-
+.sp
+<?xml version="1.0" encoding="UTF-8"?>
+.sp 0
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+.sp 0
+<plist version="1.0">
+.sp 0
+<dict>
+.sp 0
+	<key>a</key><integer>1</integer>
+.sp 0
+	<key>b</key><real>2.2999999999999998e+00</real>
+.sp 0
+	<key>c</key><string>Grape</string>
+.sp 0
+</dict>
+.sp 0
+</plist>
+.sp
+.Sh COPYRIGHT
+Copyright (c) 2024, Stephen M. Jones, All rights reserved.
