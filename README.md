@@ -50,12 +50,12 @@ Note:  For Linux, "sudo ldconfig" should be run after "make install".
 
 # codalist
 
-## ⭐️ The "codalist" Property List Utility ⭐️
+### ⭐️ The "codalist" Property List Utility ⭐️
 
 This program slices and dices plists of various formats.
 Each argument to this program is an instruction for inspecting, loading, saving, or altering plists, etc.
 
-## 🔵 Features:
+### 🔵 Features:
 
 * Create specific new compoents or add JSON branches
 * Combine and prune plists
@@ -63,13 +63,13 @@ Each argument to this program is an instruction for inspecting, loading, saving,
 * Easily convert formats 
 * A pure C source for increased portability
 
-## 🟢 Building
+### 🟢 Building
 
 This program is built as a command line tool while making the PList library.
 For Windows systems 'make install' is not supported, but you can run 'make codalistdos'
 to make a stand-alone version of the program without plugin support.
 
-## 🟠 Release notes:
+### 🟠 Release notes:
 
 1. Single leaf \<data\> plist save as raw data.
 
