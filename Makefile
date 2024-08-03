@@ -6,11 +6,6 @@ MAJOR   = 1
 COMPAT  = 1.0
 
 MACMIN  = 10.8
-ifeq ($(PREFIX),)
-PREFIX := /usr/local
-endif
-
-$(info Library: libcoda-c_plist Verson $(VERSION), Major $(MAJOR), Compatible $(COMPAT), PREFIX $(PREFIX))
 
 UNAME := $(shell uname)
 CC    = gcc
@@ -25,10 +20,19 @@ CC = clang
 ARCMD = libtool -static -o
 OSCF = -mmacosx-version-min=$(MACMIN)
 LIBSUF= $(MAJOR).dylib
+ifeq ($(PREFIX),)
+PREFIX := /usr/local
+endif
 else ifeq ($(UNAME), Linux)
 $(info Make for LINUX, uname = $(UNAME))
 LDL = -ldl
 endif
+
+ifeq ($(PREFIX),)
+PREFIX := /usr
+endif
+
+$(info Library: libcoda-c_plist Verson $(VERSION), Major $(MAJOR), Compatible $(COMPAT), PREFIX $(PREFIX))
 
 default: all
 
@@ -59,26 +63,23 @@ $(UTIL): $(ARCHIVE)
 
 MANFILE = codalist.1coda-c
 
-TESTER = pltester
-
-$(TESTER): $(ARCHIVE)
-	$(CC) $(CFLAGS) pltester.c $(OFILES) -o $(TESTER) -lm
-
-runtest: $(TESTER)
-	./pltester
-
 codalistdos: # stand-alone program -- bad binary plugin
 	$(CC) $(CFLAGS) clist10gen.c plist10gen.c -o codalistdos -lm $(LDL)
 
-all: $(ARCHIVE) $(UTIL) $(TESTER) runtest
+all: $(ARCHIVE) $(UTIL)
+
+test:
+	$(MAKE) -C tester
+	sleep 3
+	$(MAKE) -C batch
 
 clean:
-	rm -f $(OFILES) $(ARCHIVE) $(TESTER) $(TESTER).o $(TESTER).exe # DOS
+	rm -f $(OFILES) $(ARCHIVE)
 	rm -f $(UTIL) $(UTIL).o $(UTIL).exe codalistdos codalistdos.exe
+	$(MAKE) -C tester clean
+	$(MAKE) -C batch clean
 
-rebuild: clean all
-
-.PHONY:  all clean rebuild runtest install codalistdos
+.PHONY:  all clean test install codalistdos
 
 HEADER = coda-c_plist.h coda-c_strings.h
 

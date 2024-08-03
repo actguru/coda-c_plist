@@ -1873,6 +1873,7 @@ CodaClassDef(Real,double,Root);
 	PLIST_NoEncoding=32,
 	PLIST_NoDoctype=64,
 	PLIST_NoPVersion=128,
+	JSON_NoEscapeSlash=512,
 	PLIST_Coda_C     =1<<10,
 	PLIST_Binary     =1<<11,
 	PLIST_ObjectStream=4096,
@@ -2353,6 +2354,8 @@ int $FORMAT23 $(oPrintf,char *format,...) {
 		int len=0;
 			char buf[4096]; len=vsnprintf(buf,sizeof(buf),format,ap);
 			char *cp=0; if (len>=sizeof(buf)) {
+				va_end(ap);
+				va_start(ap,format);
 				len=vasprintf(&cp,format,ap); Assert_(cp);
 				}
 			char *ptr=(cp?cp:buf);
@@ -3346,6 +3349,20 @@ void defer_call_cleanup(void *vp) {
 		}
 	}
 
+bool cs_suffix(const char *key,const char *str) {
+	int klen=cs_length(key);
+	int slen=cs_length(str);
+	if (slen<klen || klen<1) return(0);
+	return cs_exact(key,str+slen-klen);
+	}
+
+bool cs_suffixCap(const char *key,const char *str) {
+	int klen=cs_length(key);
+	int slen=cs_length(str);
+	if (slen<klen || klen<1) return(0);
+	return cs_exactCap(key,str+slen-klen);
+	}
+
 	enum { UTF8max=0x10FFFF, };
 int4 Json_lastLoadType(void);
 Obj Json_FromBlock(int count,pointer block,int flags);
@@ -3708,7 +3725,7 @@ static int json_encodedLength(char *a) {
 	return(len);
 	}
 
-char* Json_stringEncode(int bufsize,char *buffer,char *a,Char *extra) {
+char* Json_stringEncode(int bufsize,char *buffer,char *a,Char *extra,bool noes) {
 	bufsize-=4;
 	if (extra) {
 		int size=json_encodedLength(a)+1;
@@ -3718,7 +3735,7 @@ char* Json_stringEncode(int bufsize,char *buffer,char *a,Char *extra) {
 	for(int j=0;a[j];++j) {
 		int cc=a[j]&0xFF;
 		if (k>=bufsize) OAbort("%s; overflow %d.",__func__,k);
-		if (cc=='/' || cc=='\\' || cc=='"') buffer[k++]='\\';
+		if ((noes==0 && cc=='/') || cc=='\\' || cc=='"') buffer[k++]='\\';
 		ei (cc<32) {
 			buffer[k++]='\\';
 			if (cc=='\t') cc='t';
@@ -3840,7 +3857,7 @@ Obj Json_toStream(Obj stream,Obj container,int flags) {
 			}
 		ei (isa_(obj,Char)) {
 			Char extra=0;
-			if (!Json_stringEncode(BLEN,_ b,aa,&extra)) return(0);
+			if (!Json_stringEncode(BLEN,_ b,aa,&extra,hasFlag(JSON_NoEscapeSlash))) return(0);
 			cleanO Char temp=extra;
 			char *buffer=(temp?temp:_ b);
 
@@ -3885,7 +3902,7 @@ Obj Json_toStream(Obj stream,Obj container,int flags) {
 			char *cp=vector[j];
 			Obj obj=Dictionary_subKey(container,cp);
 			if (!obj) OAbort("can't find obj for(%s) internal error? NEVER",cp);
-			if (!Json_stringEncode(BLEN,_ b,cp,0)) return(0);
+			if (!Json_stringEncode(BLEN,_ b,cp,0,hasFlag(JSON_NoEscapeSlash))) return(0);
 			jsn_indentEqn(self);
 			if (!jprints(self,_ b)) return(0);
 			if (isPretty()) ePrintf(" : "); else ePrintf(":");

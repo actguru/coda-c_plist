@@ -101,6 +101,8 @@ void aboute() {
 	printf("    +xml1      Do not add new lines for leafs in XML (default)\n");
 	printf("    -unsorted  Unsorted Dictionary keys\n");
 	printf("    +unsorted  Sort Dictionary keys (default)\n");
+	printf("    -noes      Do not escape slashes in JSON\n");
+	printf("    +noes      Escape slashes in JSON (default)\n");
 	printf("\n");
 	printf("  Input Options\n");
 	printf("    -strict    No JSON conversions\n");
@@ -161,6 +163,7 @@ void abouto() {
 		_ printlevel=10;
 		_ savemode=0;
 		_ filemode=PLIST_Coda_C;
+		_ datamode=72;
 		}
 
 	static int outflags(Self self) {
@@ -175,7 +178,7 @@ void abouto() {
 					Quit_("Error: %s",OError());
 				}
 			ei (_ display==4) {
-				if (!Json_toStream(stdout,_ plist,PLIST_Json|JSON_Pretty))
+				if (!Json_toStream(stdout,_ plist,PLIST_Json|JSON_Pretty|JSON_NoEscapeSlash))
 					Quit_("Error: %s",OError());
 				}
 			ei (_ display==5) {
@@ -281,6 +284,8 @@ void abouto() {
 		ei (cs_exact("+unsorted",arg))  _ savemode &= ~PLIST_UnsortedDict;
 		ei (cs_exact("-strict",arg))    _ savemode |=  PLIST_Strict;
 		ei (cs_exact("+strict",arg))    _ savemode &= ~PLIST_Strict;
+		ei (cs_exact("-noes",arg))      _ savemode |=  JSON_NoEscapeSlash;
+		ei (cs_exact("+noes",arg))      _ savemode &= ~JSON_NoEscapeSlash;
 
 		ei (cs_exact("-c",arg)) {
 			vi_about(0);
