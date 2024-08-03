@@ -73,4 +73,5 @@ to make a stand-alone version of the program without plugin support.
 ### 🟠 Release notes:
 
 1. Single leaf \<data\> plist save as raw data.
+2. Use 'man codalist' for the online manual.
 
