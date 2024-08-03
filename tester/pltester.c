@@ -22,13 +22,6 @@ int main(int argc,char **argv) {
 	return(0);
 	}
 
-bool cs_suffix(const char *key,const char *str) {
-	int klen=cs_length(key);
-	int slen=cs_length(str);
-	if (slen<klen || klen<1) return(0);
-	return cs_exact(key,str+slen-klen);
-	}
-
 void tester(Dictionary dict,bool extract) {
 	int ntest=0,ngood=0,nbad=0;
 
@@ -53,7 +46,7 @@ void tester(Dictionary dict,bool extract) {
 		printf("Test: %20.20s  %s  %s\n",file,msg,cormsg);
 		}
 	printf("\n");
-	printf("Totals: %d tests, %d correct results, %d **BAD RESULTS**\n",ntest,ngood,nbad);
+	printf("Totals: %d tests, %d correct results, %d bad results\n",ntest,ngood,nbad);
 	if (nbad>0) printf("*** %d ERRORS, STOP ***\n",nbad),exit(1);
 	}
 
