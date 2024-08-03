@@ -16,7 +16,7 @@
 	<key>bad-string.fail</key><string>&lt;plist version="1.0"&gt;
 &lt;dict&gt;
 	&lt;key&gt;&lt;/key &gt;
-	&lt;string&gt;ABC¾¾&lt;/string&gt;
+	&lt;string&gt;ABCÂ¾Â¾&lt;/string&gt;
 &lt;/dict&gt;
 &lt;/plist&gt;
 </string>
