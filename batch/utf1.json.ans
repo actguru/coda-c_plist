@@ -1,0 +1,12 @@
+---file: utf1.json
+"char Ѿ"
+---json
+"char Ѿ"
+---xml
+<plist version="1.0">
+<string>char Ѿ</string>
+</plist>
+
+---json-pretty
+"char Ѿ"
+---end

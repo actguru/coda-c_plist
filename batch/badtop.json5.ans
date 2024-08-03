@@ -1,0 +1,11 @@
+---file: badtop.json5
+
+hello
+
+---json
+*** can't load file(badtop.json5) [unquoted string as only/top object? (hello)].
+---xml
+*** can't load file(badtop.json5) [unquoted string as only/top object? (hello)].
+---json-pretty
+*** can't load file(badtop.json5) [unquoted string as only/top object? (hello)].
+---end

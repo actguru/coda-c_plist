@@ -1,0 +1,16 @@
+---file: nulltest.json
+[ "Long string\\u0000======================================================= THE END" ]
+---json
+["Long string\\u0000======================================================= THE END"]
+---xml
+<plist version="1.0">
+<array>
+	<string>Long string\u0000======================================================= THE END</string>
+</array>
+</plist>
+
+---json-pretty
+[
+  "Long string\\u0000======================================================= THE END"
+  ]
+---end

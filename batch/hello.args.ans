@@ -1,0 +1,14 @@
+---file: hello.args
+
++/=data:IkhlbGxvIERBVEEhISIK
+
+---json
+"Hello DATA!!"
+---xml
+<plist version="1.0">
+<string>Hello DATA!!</string>
+</plist>
+
+---json-pretty
+"Hello DATA!!"
+---end

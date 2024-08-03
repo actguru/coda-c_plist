@@ -1,0 +1,67 @@
+---file: sample1.args
+
++/True=true
++/d=dict
++/a=array
++/a/0=123.987 
++/d/Zero=123.987
++/d/fruit="kiwi"
++/d/fruits=[banana,orage,grape]
++/d/Matrix=[[[]]]
++/Inty=0xFF
+
+---json
+{"Inty":255,"True":true,"a":[123.987],"d":{"Matrix":[[[]]],"Zero":123.987,"fruit":"kiwi","fruits":["banana","orage","grape"]}}
+---xml
+<plist version="1.0">
+<dict>
+	<key>Inty</key><integer>255</integer>
+	<key>True</key><true/>
+	<key>a</key>
+	<array>
+		<real>1.2398699999999999e+02</real>
+	</array>
+	<key>d</key>
+	<dict>
+		<key>Matrix</key>
+		<array>
+			<array>
+				<array/>
+			</array>
+		</array>
+		<key>Zero</key><real>1.2398699999999999e+02</real>
+		<key>fruit</key><string>kiwi</string>
+		<key>fruits</key>
+		<array>
+			<string>banana</string>
+			<string>orage</string>
+			<string>grape</string>
+		</array>
+	</dict>
+</dict>
+</plist>
+
+---json-pretty
+{
+  "Inty" : 255,
+  "True" : true,
+  "a" : [
+    123.987
+    ],
+  "d" : {
+    "Matrix" : [
+      [
+        [
+          ]
+        ]
+      ],
+    "Zero" : 123.987,
+    "fruit" : "kiwi",
+    "fruits" : [
+      "banana",
+      "orage",
+      "grape"
+      ]
+    }
+  }
+---end

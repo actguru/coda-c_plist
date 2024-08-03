@@ -1,0 +1,35 @@
+---file: coda-set.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codalist SYSTEM "http://www.coda-c.com/dtds/codalist.dtd">
+<codalist>
+<dict><key>Set1</key>
+<keyword>&lt;set&gt;</keyword><array>
+	<string>item1</string>
+	<string>item2</string>
+	<string>item3</string>
+	</array>
+</dict>
+</codalist>
+---json
+{"Set1":["item1","item2","item3"]}
+---xml
+<plist version="1.0">
+<dict>
+	<key>Set1</key>
+	<array>
+		<string>item1</string>
+		<string>item2</string>
+		<string>item3</string>
+	</array>
+</dict>
+</plist>
+
+---json-pretty
+{
+  "Set1" : [
+    "item1",
+    "item2",
+    "item3"
+    ]
+  }
+---end

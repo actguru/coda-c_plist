@@ -1,0 +1,10 @@
+---file: array100.json
+[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
+]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
+---json
+*** can't load file(array100.json) [too many levels(101). Circular?].
+---xml
+*** can't load file(array100.json) [too many levels(101). Circular?].
+---json-pretty
+*** can't load file(array100.json) [too many levels(101). Circular?].
+---end

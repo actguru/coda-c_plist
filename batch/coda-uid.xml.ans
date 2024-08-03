@@ -1,0 +1,18 @@
+---file: coda-uid.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codalist SYSTEM "http://www.coda-c.com/dtds/codalist.dtd">
+<codalist>
+<uid>123456789</uid>
+</codalist>
+---json
+{"CF$UID":123456789}
+---xml
+<plist version="1.0">
+<dict>
+	<key>CF$UID</key><integer>123456789</integer>
+</dict>
+</plist>
+
+---json-pretty
+{"CF$UID":123456789}
+---end

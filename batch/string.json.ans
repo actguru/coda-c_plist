@@ -1,0 +1,12 @@
+---file: string.json
+"Hello World!"
+---json
+"Hello World!"
+---xml
+<plist version="1.0">
+<string>Hello World!</string>
+</plist>
+
+---json-pretty
+"Hello World!"
+---end

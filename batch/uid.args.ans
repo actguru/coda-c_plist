@@ -1,0 +1,31 @@
+---file: uid.args
++/uid=uid:1234
++/u2=uid:1235
++/u3=uid:1236
+---json
+{"u2":{"CF$UID":1235},"u3":{"CF$UID":1236},"uid":{"CF$UID":1234}}
+---xml
+<plist version="1.0">
+<dict>
+	<key>u2</key>
+	<dict>
+		<key>CF$UID</key><integer>1235</integer>
+	</dict>
+	<key>u3</key>
+	<dict>
+		<key>CF$UID</key><integer>1236</integer>
+	</dict>
+	<key>uid</key>
+	<dict>
+		<key>CF$UID</key><integer>1234</integer>
+	</dict>
+</dict>
+</plist>
+
+---json-pretty
+{
+  "u2" : {"CF$UID":1235},
+  "u3" : {"CF$UID":1236},
+  "uid" : {"CF$UID":1234}
+  }
+---end

@@ -1,0 +1,52 @@
+---file: json5.json5
+
+{
+	// comments
+	unquoted: 'and you can quote me on that',
+	singleQuotes: 'I can use "double quotes" here',
+	lineBreaks: "Look, Mom! \
+	No \\n's!",
+	hexadecimal: 0xdecaf,
+	leadingDecimalPoint: .8675309, andTrailing: 8675309.,
+	positiveSign: +1,
+	trailingComma: 'in objects', andIn: ['arrays',],
+	"backwardsCompatible": "with JSON",
+	}
+---json
+{"andIn":["arrays"],"andTrailing":8675309,"backwardsCompatible":"with JSON","hexadecimal":912559,"leadingDecimalPoint":0.8675309,"lineBreaks":"Look, Mom! \n\tNo \\n's!","positiveSign":1,"singleQuotes":"I can use \"double quotes\" here","trailingComma":"in objects","unquoted":"and you can quote me on that"}
+---xml
+<plist version="1.0">
+<dict>
+	<key>andIn</key>
+	<array>
+		<string>arrays</string>
+	</array>
+	<key>andTrailing</key><integer>8675309</integer>
+	<key>backwardsCompatible</key><string>with JSON</string>
+	<key>hexadecimal</key><integer>912559</integer>
+	<key>leadingDecimalPoint</key><real>8.6753089999999999e-01</real>
+	<key>lineBreaks</key><string>Look, Mom! 
+	No \n's!</string>
+	<key>positiveSign</key><integer>1</integer>
+	<key>singleQuotes</key><string>I can use "double quotes" here</string>
+	<key>trailingComma</key><string>in objects</string>
+	<key>unquoted</key><string>and you can quote me on that</string>
+</dict>
+</plist>
+
+---json-pretty
+{
+  "andIn" : [
+    "arrays"
+    ],
+  "andTrailing" : 8675309,
+  "backwardsCompatible" : "with JSON",
+  "hexadecimal" : 912559,
+  "leadingDecimalPoint" : 0.8675309,
+  "lineBreaks" : "Look, Mom! \n\tNo \\n's!",
+  "positiveSign" : 1,
+  "singleQuotes" : "I can use \"double quotes\" here",
+  "trailingComma" : "in objects",
+  "unquoted" : "and you can quote me on that"
+  }
+---end

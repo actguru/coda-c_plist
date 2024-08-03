@@ -1,0 +1,30 @@
+---file: array.json
+[ true, false, null, "abc", 1, 2.2, "/path/to/file" ]
+---json
+[true,false,null,"abc",1,2.2,"\/path\/to\/file"]
+---xml
+<plist version="1.0">
+<array>
+	<true/>
+	<false/>
+	<dict>
+		<key>CF$Null</key><true/>
+	</dict>
+	<string>abc</string>
+	<integer>1</integer>
+	<real>2.2000000000000002e+00</real>
+	<string>/path/to/file</string>
+</array>
+</plist>
+
+---json-pretty
+[
+  true,
+  false,
+  null,
+  "abc",
+  1,
+  2.2,
+  "/path/to/file"
+  ]
+---end

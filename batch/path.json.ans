@@ -1,0 +1,12 @@
+---file: path.json
+"/path/to/file"
+---json
+"\/path\/to\/file"
+---xml
+<plist version="1.0">
+<string>/path/to/file</string>
+</plist>
+
+---json-pretty
+"/path/to/file"
+---end

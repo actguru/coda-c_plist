@@ -1,0 +1,21 @@
+---file: maxutf.json
+
+{
+	"max utf8 \uDBFF\uDFFF end" :
+	"max utf8-1 \uDBFF\uDFFE end"
+	}
+
+---json
+{"max utf8 \u0000 end":"max utf8-1 􏿾 end"}
+---xml
+<plist version="1.0">
+<dict>
+	<key>max utf8 􏿿 end</key><string>max utf8-1 􏿾 end</string>
+</dict>
+</plist>
+
+---json-pretty
+{
+  "max utf8 \u0000 end" : "max utf8-1 􏿾 end"
+  }
+---end

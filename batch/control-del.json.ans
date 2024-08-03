@@ -1,0 +1,16 @@
+---file: control-del.json
+[ "<del>cr\rff\f" ]
+---json
+["<del>cr\rff\f"]
+---xml
+<plist version="1.0">
+<array>
+	<string>&lt;del&gt;crff</string>
+</array>
+</plist>
+
+---json-pretty
+[
+  "<del>cr\rff\f"
+  ]
+---end

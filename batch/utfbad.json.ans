@@ -1,0 +1,9 @@
+---file: utfbad.json
+"char ÑÑ¾"
+---json
+*** can't load file(utfbad.json) [line 1: Non-UTF8 dict:key(char ÑÑ¾)].
+---xml
+*** can't load file(utfbad.json) [line 1: Non-UTF8 dict:key(char ÑÑ¾)].
+---json-pretty
+*** can't load file(utfbad.json) [line 1: Non-UTF8 dict:key(char ÑÑ¾)].
+---end

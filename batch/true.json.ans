@@ -1,0 +1,12 @@
+---file: true.json
+true
+---json
+true
+---xml
+<plist version="1.0">
+<true/>
+</plist>
+
+---json-pretty
+true
+---end

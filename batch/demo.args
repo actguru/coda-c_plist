@@ -1,0 +1,16 @@
+
++/True=true +/False=false
++/Array=array +/Dictionary=dict
++/Integer=integer:0x10 +/Real=real:-123.456
++/String=string:string-thing +/Date=date:1971-01-01T00:00:00Z
++/Data=data:SGVsbG8K
++/Null=true +/Null=null
++/Array/0=true +/Array/1=null +/Array/2=false +/Array/+=false
+-/Array/2
++/Array/+=real:3.14159
++/duplicate=:/Integer
+-w 
++/extraction=./new.clist:/Array/3
+
++/zzz-Json={a:123,b:.456,c:[[[]]]}
+

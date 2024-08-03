@@ -1,0 +1,90 @@
+---file: demo.args
+
++/True=true +/False=false
++/Array=array +/Dictionary=dict
++/Integer=integer:0x10 +/Real=real:-123.456
++/String=string:string-thing +/Date=date:1971-01-01T00:00:00Z
++/Data=data:SGVsbG8K
++/Null=true +/Null=null
++/Array/0=true +/Array/1=null +/Array/2=false +/Array/+=false
+-/Array/2
++/Array/+=real:3.14159
++/duplicate=:/Integer
+-w 
++/extraction=./new.clist:/Array/3
+
++/zzz-Json={a:123,b:.456,c:[[[]]]}
+
+---json
+{"Array":[true,null,false,3.14159],"Data":{"CF$Data":"SGVsbG8K"},"Date":{"CF$Date":"1971-01-01T00:00:00Z"},"Dictionary":{},"False":false,"Integer":16,"Real":-123.456,"String":"string-thing","True":true,"duplicate":16,"extraction":3.14159,"zzz-Json":{"a":123,"b":0.456,"c":[[[]]]}}
+---xml
+<plist version="1.0">
+<dict>
+	<key>Array</key>
+	<array>
+		<true/>
+		<dict>
+			<key>CF$Null</key><true/>
+		</dict>
+		<false/>
+		<real>3.1415899999999999e+00</real>
+	</array>
+	<key>Data</key>
+	<data>
+	SGVsbG8K
+	</data>
+	<key>Date</key><date>1971-01-01T00:00:00Z</date>
+	<key>Dictionary</key>
+	<dict/>
+	<key>False</key><false/>
+	<key>Integer</key><integer>16</integer>
+	<key>Real</key><real>-1.2345600000000000e+02</real>
+	<key>String</key><string>string-thing</string>
+	<key>True</key><true/>
+	<key>duplicate</key><integer>16</integer>
+	<key>extraction</key><real>3.1415899999999999e+00</real>
+	<key>zzz-Json</key>
+	<dict>
+		<key>a</key><integer>123</integer>
+		<key>b</key><real>4.5600000000000002e-01</real>
+		<key>c</key>
+		<array>
+			<array>
+				<array/>
+			</array>
+		</array>
+	</dict>
+</dict>
+</plist>
+
+---json-pretty
+{
+  "Array" : [
+    true,
+    null,
+    false,
+    3.14159
+    ],
+  "Data" : {"CF$Data":"SGVsbG8K"},
+  "Date" : {"CF$Date":"1971-01-01T00:00:00Z"},
+  "Dictionary" : {
+    },
+  "False" : false,
+  "Integer" : 16,
+  "Real" : -123.456,
+  "String" : "string-thing",
+  "True" : true,
+  "duplicate" : 16,
+  "extraction" : 3.14159,
+  "zzz-Json" : {
+    "a" : 123,
+    "b" : 0.456,
+    "c" : [
+      [
+        [
+          ]
+        ]
+      ]
+    }
+  }
+---end

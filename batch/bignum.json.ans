@@ -1,0 +1,24 @@
+---file: bignum.json
+[ 1,2,-11,1234567890,12345678901234567890]
+---json
+[1,2,-11,1234567890,1.234567890123457e+19]
+---xml
+<plist version="1.0">
+<array>
+	<integer>1</integer>
+	<integer>2</integer>
+	<integer>-11</integer>
+	<integer>1234567890</integer>
+	<real>1.2345678901234567e+19</real>
+</array>
+</plist>
+
+---json-pretty
+[
+  1,
+  2,
+  -11,
+  1234567890,
+  1.234567890123457e+19
+  ]
+---end

@@ -1,0 +1,14 @@
+---file: null.json
+null
+---json
+null
+---xml
+<plist version="1.0">
+<dict>
+	<key>CF$Null</key><true/>
+</dict>
+</plist>
+
+---json-pretty
+null
+---end

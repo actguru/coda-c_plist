@@ -1,0 +1,14 @@
+---file: date.args
+
++/=date:1971-01-01T00:00:00Z
+
+---json
+{"CF$Date":"1971-01-01T00:00:00Z"}
+---xml
+<plist version="1.0">
+<date>1971-01-01T00:00:00Z</date>
+</plist>
+
+---json-pretty
+{"CF$Date":"1971-01-01T00:00:00Z"}
+---end

@@ -1,0 +1,22 @@
+---file: float.json
+[ 1.0, 2.5, 6.2, 3.141592 ]
+---json
+[1,2.5,6.2,3.141592]
+---xml
+<plist version="1.0">
+<array>
+	<integer>1</integer>
+	<real>2.5000000000000000e+00</real>
+	<real>6.2000000000000002e+00</real>
+	<real>3.1415920000000002e+00</real>
+</array>
+</plist>
+
+---json-pretty
+[
+  1,
+  2.5,
+  6.2,
+  3.141592
+  ]
+---end

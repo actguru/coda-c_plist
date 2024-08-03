@@ -1,0 +1,11 @@
+
++/True=true
++/d=dict
++/a=array
++/a/0=123.987 
++/d/Zero=123.987
++/d/fruit="kiwi"
++/d/fruits=[banana,orage,grape]
++/d/Matrix=[[[]]]
++/Inty=0xFF
+

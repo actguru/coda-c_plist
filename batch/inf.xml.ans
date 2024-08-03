@@ -1,0 +1,14 @@
+---file: inf.xml
+<plist version="1.0">
+<real>inf</real>
+</plist>
+---json
+*** failed write to stdout [Bad Real Value(inf)?].
+---xml
+<plist version="1.0">
+<real>inf</real>
+</plist>
+
+---json-pretty
+*** failed write to stdout [Bad Real Value(inf)?].
+---end

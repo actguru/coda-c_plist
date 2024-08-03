@@ -1,0 +1,23 @@
+---file: unquoted.json5
+{
+key1: [ unquoted ]
+}
+---json
+{"key1":["unquoted"]}
+---xml
+<plist version="1.0">
+<dict>
+	<key>key1</key>
+	<array>
+		<string>unquoted</string>
+	</array>
+</dict>
+</plist>
+
+---json-pretty
+{
+  "key1" : [
+    "unquoted"
+    ]
+  }
+---end
