@@ -1,7 +1,7 @@
 
 # 🔱 Changes Logged Here 🔱
 
-## 1.2 (2024-08-XX)
+## 1.2 (2024-08-04)
 
 ### 🟢 Dynamic library, 2nd test battery
 
