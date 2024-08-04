@@ -1,15 +1,144 @@
-.Dd July 31, 2024
+.Dd August 04, 2024
 .Dt CODALIST "" "Coda-C"
 .Os Multiplatform
 .Sh NAME
 .Nm codalist
-.Nd property list utility (Version 1.0  07/28/2024)
+.Nd property list utility (Version 1.2)
 .Sh SYNOPSIS
 .Nm
 .Op option/file ...
 .Sh DESCRIPTION
 .Nm
-can be used to slice and dice plist files.  Please use -h, -he, and -ho options to review arguments/commands, encoding and new objects.  Each argument is a command, executed in order until all are executed or a FATAL error occurs.
+can be used to slice and dice plist files.
+Each argument is a command, executed in order until all are executed or a FATAL error occurs.
+.sp
+.Nm
+without any arguments will display the default help (-h).
+.Bl -tag -width "helpxx"
+.It Fl h
+Show usage information.
+.It Fl he
+Show encoding flags.
+.It Fl ho
+Show objects types.
+.It Fl c
+Show Copyright (c) information.
+.El
+.Pp
+The program works on a single plist and keeps track of a \fIPLIST\fR, \fIFILENAME\fR, \fIFORMAT\fR,
+and will default to printing the plist, in terse format, if it was not written to a file.
+Upon startup the \fIFILENAME\fR is "new.clist",
+the \fIFORMAT\fR is Coda-C-XML, and the \fIPLIST\fR is an empty Dictionary.
+.Pp
+.Ar file
+\0\0\0Load the specified file, setting: \fIPLIST\fR, \fIFILENAME\fR, and \fIFORMAT\fR.
+Use "-" for <stdin>.
+.Pp
+When the program finishes runing the arguments, a version of the \fIPLIST\fR may be printed.
+.Bl -tag -width "helpxx"
+.It Fl d
+No display at end of arguments.
+.It Fl dn
+Display at end of arguments (terse).
+.It Fl dw
+Display at end of arguments, if not written (terse).
+.It Fl da
+Display Apple XML at end of arguments (-xhead).
+.It Fl dc
+Display Coda-C XML at end of arguments (-xhead).
+.It Fl dj
+Display JSON at end of arguments (-pretty,-noes).
+.El
+.Pp
+Note: A PList composed of a single data leaf will write raw data.
+To change the output encoding part of \fIFORMAT\fR use the following:
+.Bl -tag -width "helpxx"
+.It Fl ec
+Serialize to Coda-C XML format.
+.It Fl ea
+Serialize to Apple XML format.
+.It Fl eb
+Serialize to Apple Binary format.
+.It Fl ej
+Serialize to JSON format.
+.El
+.Pp
+For the following options "-" sets the flag and "+" clears it.
+To change the encoding details part of \fIFORMAT\fR use the following:
+.Bl -tag -width "helpxxXXX"
+.It Fl pretty
+Add spaces and new lines to JSON. (+pretty)
+.It Fl xhead
+Do not Output XML Headers. (+xhead)
+.It Fl xml1
+Add new lines for leafs in XML. (+xml1)
+.It Fl unsorted
+Unsorted Dictionary keys. (+unsorted)
+.It Fl noes
+Do not escape slashes in JSON. (+noes)
+.It Fl strict
+No JSON conversions for <uid>, <date>, & <data>. (+strict, input/output)
+.El
+.Pp
+Use the following to write files:
+.Bl -tag -width "helpxxXXX"
+.It Fl w
+Write the current \fIFILENAME\fR in the current \fIFORMAT\fR.
+.It Fl w:-
+Write to <stdout>.
+.It Fl w:\fIAFILE\fR
+Write to a specified file.
+.It Fl f:\fIAFILE\fR
+Set the \fIFILENAME\fR to "AFILE".
+.El
+.Pp
+Other miscellaneous flags are:
+.Bl -tag -width "helpxxXXX"
+.It Fl v
+Verbose(on): display processing messages. (+v)
+.It Fl n
+Output a newline. (useful when displaying JSON)
+.It Fl i
+Display information: \fIFILENAME\fR, <top object type>, & raw mode.
+.It Fl t
+Test plist for Coda-C XML, Apple XML, Binary, & JSON formats.
+Check compatibility with "-strict -t".
+.It Fl q
+Quit processing arguments. (useful for testing)
+.El
+.Pp
+The following two commands are used to alter the contents of a plist:
+.Pp
+	\fB-\fR/\fIKEYPATH\fR
+Remove the selected component of \fIPLIST\fR.
+.Pp
+	\fB+\fR/\fIKEYPATH\fR=\fIObject\fR
+Add or replace the selected component with \fIObject\fR.
+.Pp
+A \fIKEYPATH\fR looks like a file-path but the names refer to dictionary keys or array indexes (using "+" to add to an array.  Example: "/key1/0", "/list/+" etc.
+.Pp
+The current list of \fIObjects\fR follows:
+.Pp
+.nf
+	\fBdict\fR
+	\fBarray\fR
+	\fBtrue\fR
+	\fBfalse\fR
+	\fBnull\fR  (arrays allow nulls, but not for all formats)
+	\fBjsonnull\fR  (placeholder for dictionary JSON null)
+	\fBstring:\fR\fIGreen_Tea\fR
+	\fBint:\fR\fI12345\fR  (or integer:)
+	\fBuid:\fR\fI12345\fR  (CF$UID)
+	\fBdate:\fR\fI1971-12-31T23:23:59Z\fR
+	\fBreal:\fR\fI12.345\fR
+	\fBdata:\fR\fIBASE64.DATA.AAAA\fR
+	\fBdatafile:\fR\fIMyfile.bin\fR  (contents of file as Data)
+	\fB./\fRFILE\fI[:KEYPATH]\fR  (component of plist file)
+	\fB/\fRFILE\fI[:KEYPATH]\fR
+	\fB:KEYPATH\fR  (in current plist)
+	\fBJSON\fR  (a valid JSON5 string)
+.fi
+.Pp
 .Sh EXAMPLES
 	codalist -c # copyright info
 .sp
@@ -64,7 +193,7 @@ Dates are highly formatted.
 .sp 0
 	Produces: "Hello\\n"
 .sp
-Items from the current plist my be copied.
+Items from the current plist may be copied.
 .sp
 	codalist +/='{a:1,b:2,c:3}' +/d=:/b # will copy dict key "b" to new key "d"
 .sp
@@ -111,4 +240,4 @@ And naturally we can print XML.
 </plist>
 .sp
 .Sh COPYRIGHT
-Copyright (c) 2024, Stephen M. Jones, All rights reserved.
+Copyright (c) 2024  Stephen M. Jones, Affero GPL 3.
