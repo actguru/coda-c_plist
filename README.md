@@ -25,7 +25,7 @@ Plists are easy to create and modify programmatically, and even easier to save a
 
 You need a modern C compiler.  Testing has been done for 64-bit Apple and Linux systems with gcc/clang.
 A Makefile is provided to install the dynamic library, headers, and 'codalist' in /usr/local or /usr for Linux.
-Note:  For Linux, "sudo ldconfig" should be run after "make install".
+Note:  For Linux, "sudo ldconfig" should be run after "sudo make install".
 After installing but before cleaning, make 'test' will run two small test batteries to verify the products.
 
 ## 🟣 Links
