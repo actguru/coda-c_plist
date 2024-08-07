@@ -3,6 +3,13 @@
 build=0
 # build=1 # make ans files
 
+codalist="codalist"
+if test -f "../codalist"
+	then codalist="../codalist"
+	fi
+
+echo "codalist is $codalist"
+
 if test -f new.clist
 	then rm new.clist
 	fi
@@ -16,19 +23,19 @@ testfile() {
 		*.args)
 			args=$(cat $f)
 			file="args.temp" # XXX create temp file
-			if codalist $args -ej -w:- -n > $file 2>&1
+			if $codalist $args -ej -w:- -n > $file 2>&1
 				then : # echo good; exit
 				else echo bad see: args.temp 1>&2; exit
 				fi
 			;;
 		esac
 	echo "---json"
-	codalist "$file" -ej -w:- -n 2>&1
+	$codalist "$file" -ej -w:- -n 2>&1
 	echo "---xml"
-	codalist "$file" -xhead -ea -w:- -n 2>&1
-	# codalist "$file" -xhead -ec -w:- -n 2>&1
+	$codalist "$file" -xhead -ea -w:- -n 2>&1
+	# $codalist "$file" -xhead -ec -w:- -n 2>&1
 	echo "---json-pretty"
-	codalist "$file" -noes -pretty -ej -w:- 2>&1
+	$codalist "$file" -noes -pretty -ej -w:- 2>&1
 	echo "---end"
 	case "$file" in
 		args.temp) rm "$file";; ## XXX comment to prevent delete
