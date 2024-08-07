@@ -4,8 +4,8 @@ build=0
 # build=1 # make ans files
 
 codalist="codalist"
-if test -f "../codalist"
-	then codalist="../codalist"
+if test -f "../codalistdos"
+	then codalist="../codalistdos"
 	fi
 
 echo "codalist is $codalist"
@@ -25,7 +25,7 @@ testfile() {
 			file="args.temp" # XXX create temp file
 			if $codalist $args -ej -w:- -n > $file 2>&1
 				then : # echo good; exit
-				else echo bad see: args.temp 1>&2; exit
+				else echo bad see: args.temp 1>&2; exit 3
 				fi
 			;;
 		esac
@@ -59,7 +59,7 @@ checkfile() { # just use "$f", no args
 					cp $f.out $f.ans
 					let ++nnew
 					;;
-				*) echo "No correct result stored for: $f *** QUIT ***"; exit 1 ;;
+				*) echo "No correct result stored for: $f *** QUIT ***"; exit 2 ;;
 				esac
 		fi
 	}
