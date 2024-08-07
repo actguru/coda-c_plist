@@ -180,8 +180,6 @@ Real Real_Value(double value);
 		Object_leaks_NOP(OBind1_2M(defer_,__LINE__))
  #define Object_Leaks() $CLEANUP(Object_leaks_cleaner) huge OBind1_2M(leaks,__LINE__)[3]= \
 	  {Object_Counter,__LINE__,(huge)__func__}; Object_leaks_NOP( OBind1_2M(leaks,__LINE__) )
-bool cs_suffix(const char *key,const char *str);
-bool cs_suffixCap(const char *key,const char *str);
 void defer_call_cleanup(void *vp);
 Char obj_xmlTag(Obj obj);
 Char obj_ToString(Obj obj);

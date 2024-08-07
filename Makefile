@@ -1,4 +1,4 @@
-# Apple, Linux, Windows (has install issues) # 07/26/2024
+# Apple, Linux, Windows (has install issues) # 08/06/2024
 
 VERSION = 1.2
 COPYYEARS = 2024
@@ -52,8 +52,11 @@ ifeq ($(UNAME), Darwin)
 	clang -dynamiclib -compatibility_version $(COMPAT) -current_version $(VERSION) \
 	-install_name $(DESTDIR)$(PREFIX)/lib/$(ARCHIVE) -headerpad_max_install_names \
 	-o $(ARCHIVE) $(OSCF) $(OFILES) 
+	ln -s -f $(ARCHIVE) $(THELIB).dylib
 else
 	$(CC) -shared -o $(ARCHIVE) -Wl,-soname,$(THELIB).so.$(MAJOR) $(OFILES) 
+	ln -s -f $(ARCHIVE) $(THELIB).so
+	ln -s -f $(ARCHIVE) $(THELIB).so.$(MAJOR)
 endif
 
 UTIL = codalist
@@ -74,7 +77,8 @@ test:
 	$(MAKE) -C batch
 
 clean:
-	rm -f $(OFILES) $(ARCHIVE)
+	rm -f $(OFILES) $(ARCHIVE) $(THELIB).dylib
+	rm -f $(THELIB).so $(THELIB).so.$(MAJOR)
 	rm -f $(UTIL) $(UTIL).o $(UTIL).exe codalistdos codalistdos.exe
 	$(MAKE) -C tester clean
 	$(MAKE) -C batch clean
@@ -83,20 +87,24 @@ clean:
 
 HEADER = coda-c_plist.h coda-c_strings.h
 
+INSTALL ?= cp -a
+
+MKDIR   ?= mkdir -p
+
 install: $(ARCHIVE) $(HEADER) $(UTIL) $(MANFILE)
-	install -d $(DESTDIR)$(PREFIX)/lib/
-	install -m 644 $(ARCHIVE) $(DESTDIR)$(PREFIX)/lib/
-	install -d $(DESTDIR)$(PREFIX)/include/
-	install -m 644 $(HEADER) $(DESTDIR)$(PREFIX)/include/
+	$(MKDIR)              $(DESTDIR)$(PREFIX)/lib/
+	$(INSTALL) $(ARCHIVE) $(DESTDIR)$(PREFIX)/lib/
+	$(MKDIR)              $(DESTDIR)$(PREFIX)/include/
+	$(INSTALL) $(HEADER)  $(DESTDIR)$(PREFIX)/include/
+	$(MKDIR)              $(DESTDIR)$(PREFIX)/bin/
+	$(INSTALL) $(UTIL)    $(DESTDIR)$(PREFIX)/bin/
+	$(MKDIR)              $(DESTDIR)$(PREFIX)/share/man/man1/
+	$(INSTALL) $(MANFILE) $(DESTDIR)$(PREFIX)/share/man/man1/
 ifeq ($(UNAME), Darwin)
-	ln -s -f $(ARCHIVE) $(DESTDIR)$(PREFIX)/lib/$(THELIB).dylib
+	$(INSTALL) $(THELIB).dylib       $(DESTDIR)$(PREFIX)/lib/
 else
-	ln -s -f $(ARCHIVE) $(DESTDIR)$(PREFIX)/lib/$(THELIB).so
-	ln -s -f $(ARCHIVE) $(DESTDIR)$(PREFIX)/lib/$(THELIB).so.$(MAJOR)
+	$(INSTALL) $(THELIB).so          $(DESTDIR)$(PREFIX)/lib/
+	$(INSTALL) $(THELIB).so.$(MAJOR) $(DESTDIR)$(PREFIX)/lib/
 	# sudo ldconfig
 endif
-	install -d $(DESTDIR)$(PREFIX)/bin/
-	install -m 755 $(UTIL) $(DESTDIR)$(PREFIX)/bin/
-	install -d $(DESTDIR)$(PREFIX)/share/man/man1/
-	install -m 644 $(MANFILE) $(DESTDIR)$(PREFIX)/share/man/man1/
 

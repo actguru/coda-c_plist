@@ -52,6 +52,8 @@ int cs_posCap(const char *key,const char *str);
 int4 cs_toInt4(const char *string);
 double cs_toReal(const char *string);
 Array Char_Split(char* string,char* delimiter);
+bool cs_suffix(const char *key,const char *str);
+bool cs_suffixCap(const char *key,const char *str);
 huge cs_toHuge(const char* str);
 void cs_rightTrim(char *str);
 void cs_leftTrim(char *str);
