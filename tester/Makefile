@@ -24,7 +24,7 @@ TESTER = pltester
 ARCHIVE = ../plist10gen.o
 
 $(TESTER): $(ARCHIVE)
-	$(CC) $(CFLAGS) $(CFILES) $(ARCHIVE) -o $(TESTER) -lm
+	$(CC) $(CFLAGS) $(CFILES) $(ARCHIVE) -o $(TESTER) -lm -I..
 
 all: $(TESTER)
 	./$(TESTER)
