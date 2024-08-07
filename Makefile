@@ -66,12 +66,13 @@ $(UTIL): $(ARCHIVE)
 
 MANFILE = codalist.1coda-c
 
-codalistdos: # stand-alone program -- bad binary plugin
+# stand-alone program -- bad binary plugin
+codalistdos:
 	$(CC) $(CFLAGS) clist10gen.c plist10gen.c -o codalistdos -lm $(LDL)
 
 all: $(ARCHIVE) $(UTIL)
 
-test:
+test: codalistdos
 	$(MAKE) -C tester
 	sleep 3
 	$(MAKE) -C batch
@@ -91,9 +92,14 @@ INSTALL ?= cp -a
 
 MKDIR   ?= mkdir -p
 
+# lib or lib64 -- linux
+ifeq ($(LIB),)
+LIB := lib
+endif
+
 install: $(ARCHIVE) $(HEADER) $(UTIL) $(MANFILE)
-	$(MKDIR)              $(DESTDIR)$(PREFIX)/lib/
-	$(INSTALL) $(ARCHIVE) $(DESTDIR)$(PREFIX)/lib/
+	$(MKDIR)              $(DESTDIR)$(PREFIX)/$(LIB)/
+	$(INSTALL) $(ARCHIVE) $(DESTDIR)$(PREFIX)/$(LIB)/
 	$(MKDIR)              $(DESTDIR)$(PREFIX)/include/
 	$(INSTALL) $(HEADER)  $(DESTDIR)$(PREFIX)/include/
 	$(MKDIR)              $(DESTDIR)$(PREFIX)/bin/
@@ -101,10 +107,10 @@ install: $(ARCHIVE) $(HEADER) $(UTIL) $(MANFILE)
 	$(MKDIR)              $(DESTDIR)$(PREFIX)/share/man/man1/
 	$(INSTALL) $(MANFILE) $(DESTDIR)$(PREFIX)/share/man/man1/
 ifeq ($(UNAME), Darwin)
-	$(INSTALL) $(THELIB).dylib       $(DESTDIR)$(PREFIX)/lib/
+	$(INSTALL) $(THELIB).dylib       $(DESTDIR)$(PREFIX)/$(LIB)/
 else
-	$(INSTALL) $(THELIB).so          $(DESTDIR)$(PREFIX)/lib/
-	$(INSTALL) $(THELIB).so.$(MAJOR) $(DESTDIR)$(PREFIX)/lib/
+	$(INSTALL) $(THELIB).so          $(DESTDIR)$(PREFIX)/$(LIB)/
+	$(INSTALL) $(THELIB).so.$(MAJOR) $(DESTDIR)$(PREFIX)/$(LIB)/
 	# sudo ldconfig
 endif
 
