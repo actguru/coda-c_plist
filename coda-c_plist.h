@@ -152,6 +152,8 @@ CodaClassDef(Real,double,Root);
 	PLIST_Json       =1<<13,
 	JSON_Pretty      =1<<14,
 	PLIST_Strict     =1<<15,
+	Binary_MaxComp   =1<<30,
+	Binary_NoComp    =1<<31,
 	};
 Bool Bool_Value(bool value);
 Data Data_NewBlock(Data self,int count,pointer address);

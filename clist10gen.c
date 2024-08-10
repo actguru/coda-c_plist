@@ -22,7 +22,6 @@ along with Coda-C_PList. If not, see <https://www.gnu.org/licenses/>.
 
 	#include "./coda-c_plist.h"
 	#include "./coda-c_strings.h"
-	#include <assert.h>
 
 	#define _ self->
 	#define ei else if
@@ -92,17 +91,14 @@ void aboute() {
 	printf("    -ej  Serialize to JSON format\n");
 	printf("    Note: A PList composed of a single data leaf will write raw data\n");
 	printf("\n");
-	printf("  Output Options\n");
-	printf("    -pretty    Add spaces and new lines to JSON\n");
-	printf("    +pretty    Compact JSON (default)\n");
-	printf("    -xhead     Do not Output XML Headers\n");
-	printf("    +xhead     Output XML Headers (default)\n");
-	printf("    -xml1      Add new lines for leafs in XML\n");
-	printf("    +xml1      Do not add new lines for leafs in XML (default)\n");
-	printf("    -unsorted  Unsorted Dictionary keys\n");
-	printf("    +unsorted  Sort Dictionary keys (default)\n");
-	printf("    -noes      Do not escape slashes in JSON\n");
-	printf("    +noes      Escape slashes in JSON (default)\n");
+	printf("  Output Options (+ turns opion off)\n");
+	printf("    -pretty    Add spaces and new lines to JSON (+pretty)\n");
+	printf("    -xhead     Do not Output XML Headers        (+xhead)\n");
+	printf("    -xml1      Add new lines for leafs in XML   (+xml1)\n");
+	printf("    -unsorted  Unsorted Dictionary keys         (+unsorted)\n");
+	printf("    -noes      Do not escape slashes in JSON    (+noes)\n");
+	printf("    -nocomp    Do not compress Binary output    (+nocomp)\n");
+	printf("    -maxcomp   Maximize compression for Binary  (+maxcomp)\n");
 	printf("\n");
 	printf("  Input Options\n");
 	printf("    -strict    No JSON conversions\n");
@@ -167,7 +163,7 @@ void abouto() {
 		}
 
 	static int outflags(Self self) {
-		return( ((_ filemode|_ savemode)&0xFFFF) | ((_ datamode<<16)&0xFFFF0000) );
+		return( ((_ filemode|_ savemode)&0xF000FFFF) | ((_ datamode<<16)&0x0FFF0000) );
 		}
 
 	static void fini(Self self) {
@@ -194,7 +190,8 @@ void abouto() {
 		Char modes[]={"Coda-C XML", "Apple XML", "Apple Binary", "JSON", 0 };
 		for(int j=0;j<4;++j) {
 			printf("Testing %12.12s: ",modes[j]);
-			cleanO FileMem sink=FileMem_Open(0); assert(sink);
+			cleanO FileMem sink=FileMem_Open(0);
+			if (!sink) Quit_("%s; FileMem_Open(0) Error?",__func__);
 			if (!Json_toStream(sink,_ plist,PLIST_ObjectStream | modea[j] | (PLIST_Strict & outflags(self)) ))
 				 printf("%s\n",OError());
 			else printf("*** OK ***\n");
@@ -211,7 +208,7 @@ void abouto() {
 			}
 		else {
 			if (file) {
-				assert(*file);
+				if (!*file) Quit_("%s; no filename?",__func__);
 				if (_ verbose) Msg_("Saving.: %s",file);
 				if (!Json_save(file,_ plist,outflags(self)))
 					Quit_("*** can't save file(%s) [%s].",file,OError());
@@ -286,6 +283,11 @@ void abouto() {
 		ei (cs_exact("+strict",arg))    _ savemode &= ~PLIST_Strict;
 		ei (cs_exact("-noes",arg))      _ savemode |=  JSON_NoEscapeSlash;
 		ei (cs_exact("+noes",arg))      _ savemode &= ~JSON_NoEscapeSlash;
+
+		ei (cs_exact("-nocomp",arg))    _ savemode |=  Binary_NoComp;
+		ei (cs_exact("+nocomp",arg))    _ savemode &= ~Binary_NoComp;
+		ei (cs_exact("-maxcomp",arg))   _ savemode |=  Binary_MaxComp;
+		ei (cs_exact("+maxcomp",arg))   _ savemode &= ~Binary_MaxComp;
 
 		ei (cs_exact("-c",arg)) {
 			vi_about(0);
@@ -590,12 +592,13 @@ pointer dynamo() {
 		else	{
 			int nel=Dictionary_count(container);
 			cleanO Pointer vector=Dictionary_AllKeys(container);
-				assert(nel==Pointer_count(vector));
+				if (nel!=Pointer_count(vector)) Quit_("%s; Dict count error?",__func__);
 			pointer_sort(vector,nel,strcmp,0);
 			for(int j=0;j<nel;++j) { char *cp=vector[j];
 				indentos(os,indent);
 				fprintf(os,"%s=",cp);
-				Obj obj=Dictionary_subKey(container,cp); assert(obj);
+				Obj obj=Dictionary_subKey(container,cp);
+				if (!obj) Quit_("%s; can't find key?",__func__);
 				printItem(obj,os,isArray,indent,maxlevel);
 				}
 			}
@@ -609,7 +612,8 @@ void PList_Diag2Level(Obj list,FILE *os,int maxlevel) {
 
 Data stdin_read() {
 
-	cleanO FileMem fff=FileMem_Open(0); assert(fff);
+	cleanO FileMem fff=FileMem_Open(0);
+	if (!fff) Quit_("%s; FileMem_Open(0) Error?",__func__);
 
 	while(1) {
 		char buffer[4096];
@@ -618,7 +622,8 @@ Data stdin_read() {
 		FileMem_oWrite(fff,buffer,ret);
 		}
 
-	Data data=FileMem_ToData(fff); assert(data);
+	Data data=FileMem_ToData(fff);
+	if (!data) Quit_("%s; FileMem_ToData() Error?",__func__);
 
 	return(data);
 	}

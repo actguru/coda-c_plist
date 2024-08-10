@@ -1,9 +1,9 @@
-.Dd August 04, 2024
+.Dd August 09, 2024
 .Dt CODALIST "" "Coda-C"
 .Os Multiplatform
 .Sh NAME
 .Nm codalist
-.Nd property list utility (Version 1.2)
+.Nd property list utility (Version 1.3)
 .Sh SYNOPSIS
 .Nm
 .Op option/file ...
@@ -78,6 +78,10 @@ Unsorted Dictionary keys. (+unsorted)
 Do not escape slashes in JSON. (+noes)
 .It Fl strict
 No JSON conversions for <uid>, <date>, & <data>. (+strict, input/output)
+.It Fl nocomp
+Do not compress binary output. (+nocomp)
+.It Fl maxcomp
+Maximize binary compression. (+maxcomp)
 .El
 .Pp
 Use the following to write files:

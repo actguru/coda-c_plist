@@ -1,6 +1,6 @@
-# Apple, Linux, Windows (has install issues) # 08/06/2024
+# Apple, Linux, Windows (has install issues) # 08/10/2024
 
-VERSION = 1.2
+VERSION = 1.3
 COPYYEARS = 2024
 MAJOR   = 1
 COMPAT  = 1.0
@@ -78,7 +78,7 @@ test: codalistdos
 	$(MAKE) -C batch
 
 clean:
-	rm -f $(OFILES) $(ARCHIVE) $(THELIB).dylib
+	rm -f $(OFILES) $(ARCHIVE) $(THELIB).dylib clist10gen.o
 	rm -f $(THELIB).so $(THELIB).so.$(MAJOR)
 	rm -f $(UTIL) $(UTIL).o $(UTIL).exe codalistdos codalistdos.exe
 	$(MAKE) -C tester clean

@@ -471,7 +471,8 @@ static void CArray_Smaller(CArray dest) {
 	}
 
 void Array_removeBlock(Array self,int dix,int count) {
-	if (count<1) return; assert(dix>=0 && dix+count<=_ count);
+	if (count<1) return;
+	assert(dix>=0 && dix+count<=_ count);
 	C_Array_Release(self,Memory_etor(self),dix,count);
 	if (dix==0)				_ zerox+=count;
 	ei (dix+count==_ count)	;
@@ -494,7 +495,8 @@ static void CArray_Upgrade(CArray dest,int dix,int count,Pointer block,char *msg
 	}
 
 void Array_takeBlock(Array self,int index,int count,pointer block) {
-	if (count<1) return; assert(index>=0 && index<=_ count);
+	if (count<1) return;
+	assert(index>=0 && index<=_ count);
 	Char msg=0; int tailcount=_ count - index;
 	if (index==0) { msg="Expand Front";
 		if (count<= _ zerox) {
@@ -1880,6 +1882,8 @@ CodaClassDef(Real,double,Root);
 	PLIST_Json       =1<<13,
 	JSON_Pretty      =1<<14,
 	PLIST_Strict     =1<<15,
+	Binary_MaxComp   =1<<30,
+	Binary_NoComp    =1<<31,
 	PLIST_ITUNES= ( PLIST_UnsortedDict | PLIST_AddComputer | PLIST_Amp38 ),
 	};
 	#define Real_count Root_get_count
@@ -2813,7 +2817,7 @@ $boot(PList) { PList_leafs_init(); }
 	#undef ALEN
 
 	static pointer ptrLoadArray(Self self,Array array) {
-		for(int j=0;1;++j)	{
+		while(1) {
 			static Char ender=Os("/array");
 			Obj obj=ptrLoadItem(self,ender); if (!obj) return(0);
 			if (obj==ender) break;
@@ -3050,7 +3054,7 @@ Obj PList_toStream(Obj stream,Obj container,int flags) {
 
 		if (isa_(obj,Bool)) ePrintf("<%s/>\n",buffer);
 		ei (isa_(obj,Data)) {
-			Data2_PLData2os(obj,self,(_ flags>>16)&0xFFFF,indent+1-leaf,aa);
+			Data2_PLData2os(obj,self,(_ flags>>16)&0x0FFF,indent+1-leaf,aa);
 			}
 		else ePrintf("<%s>%s</%s>\n",kind,buffer,kind);
 
@@ -3154,7 +3158,7 @@ Obj PList_toStream(Obj stream,Obj container,int flags) {
 		}
 
 	static void Data2_PLData2os(Data obj,Self self,int chunk,int indent,Char str) {
-		if (chunk && (chunk<4 || chunk>1000)) chunk=72;
+		if (chunk && (chunk<4 || chunk>4095)) chunk=72;
 		ePrintf("<%s>","data");
 			int len=cs_length(str);
 		cleanO Char work=newOC(Char,2*len+1024);
@@ -3517,13 +3521,13 @@ Obj Json_Load(char *file,int flags);
 		}
 
 	static pointer jsnLoadArray(Self self,Array array) {
-		for(int j=0;1;++j)	{
+		while(1) {
 			static Char ender=Os("]");
 			Obj obj=jsnLoadItem(self,ender,0); if (!obj) return(0);
 			if (obj==ender) break;
 			if (obj==kComma) continue;
 			if (obj==kColon) OAbort("Colon in array?");
-			if (isa_JsonNull(obj)) obj=0;
+			if (isa_JsonNull(obj)) { freeO(obj); obj=0; }
 			Array_take(array,obj);
 			}
 		return("OK");
