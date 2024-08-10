@@ -1,6 +1,12 @@
 
 # 🔱 Changes Logged Here 🔱
 
+## 1.3 (2024-08-10)
+
+### 🟢 Improved Linux Makefile, Binary Format flags
+
+⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️⚡️
+
 ## 1.2 (2024-08-05)
 
 ### 🟢 Dynamic library, 2nd test battery
