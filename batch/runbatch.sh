@@ -22,10 +22,10 @@ testfile() {
 	case "$f" in
 		*.args)
 			args=$(cat $f)
-			file="args.temp" # XXX create temp file
+			file="$f.temp" # XXX create temp file
 			if $codalist $args -ej -w:- -n > $file 2>&1
 				then : # echo good; exit
-				else echo bad see: args.temp 1>&2; exit 3
+				else echo bad see: $file 1>&2; exit 3
 				fi
 			;;
 		esac
@@ -37,9 +37,6 @@ testfile() {
 	echo "---json-pretty"
 	$codalist "$file" -noes -pretty -ej -w:- 2>&1
 	echo "---end"
-	case "$file" in
-		args.temp) rm "$file";; ## XXX comment to prevent delete
-		esac
 	}
 
 checkfile() { # just use "$f", no args

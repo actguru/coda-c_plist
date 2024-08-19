@@ -1,0 +1,5 @@
++/text1=textfile:lines.txt
++/text2=datafile:lines.txt
+-nelf
+-pretty
+-html

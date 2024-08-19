@@ -4,5 +4,5 @@ make:
 
 clean:
 	rm -f new.clist
-	rm -f args.temp
+	rm -f *.temp
 
