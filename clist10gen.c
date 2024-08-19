@@ -27,8 +27,8 @@ along with Coda-C_PList. If not, see <https://www.gnu.org/licenses/>.
 	#define ei else if
 	#define file_read(is,buf,nel)  fread( buf,1,nel,is)
 	#define file_write(os,buf,nel) fwrite(buf,1,nel,os)
-	#define Msg_(cs,...)  fprintf(stderr,cs "\n",##__VA_ARGS__)
-	#define Quit_(cs,...) fprintf(stderr,cs "\n",##__VA_ARGS__),exit(-1)
+
+	enum { PLIST_ITUNES= ( PLIST_UnsortedDict | PLIST_AddComputer | PLIST_Amp38 ), };
 
 void vi_about(bool junk);
 void about(void);
@@ -91,7 +91,7 @@ void aboute() {
 	printf("    -ej  Serialize to JSON format\n");
 	printf("    Note: A PList composed of a single data leaf will write raw data\n");
 	printf("\n");
-	printf("  Output Options (+ turns opion off)\n");
+	printf("  Output Options (+ turns option off)\n");
 	printf("    -pretty    Add spaces and new lines to JSON (+pretty)\n");
 	printf("    -xhead     Do not Output XML Headers        (+xhead)\n");
 	printf("    -xml1      Add new lines for leafs in XML   (+xml1)\n");
@@ -99,6 +99,7 @@ void aboute() {
 	printf("    -noes      Do not escape slashes in JSON    (+noes)\n");
 	printf("    -nocomp    Do not compress Binary output    (+nocomp)\n");
 	printf("    -maxcomp   Maximize compression for Binary  (+maxcomp)\n");
+	printf("    -html      Only escape / if </ for JSON     (+html)\n");
 	printf("\n");
 	printf("  Input Options\n");
 	printf("    -strict    No JSON conversions\n");
@@ -128,16 +129,16 @@ void abouto() {
 	printf("    uid:12345  (CF$UID)\n");
 	printf("    date:1971-12-31T23:23:59Z\n");
 	printf("    real:12.345\n");
+	printf("    int128:67890:12345 (low:high)\n");
 	printf("    data:BASE64.DATA.AAAA\n");
 	printf("    datafile:Myfile.bin  (contents of file as Data)\n");
+	printf("    textfile:Myfile.txt  (contents of file as Char)\n");
 	printf("    ./FILE[:keypath] (component of plist file)\n");
 	printf("    /FILE[:keypath]\n");
 	printf("    :keypath (in current plist)\n");
 	printf("    JSON  (a valid JSON5 string)\n");
 	printf("\n");
 	}
-
-	enum { PLIST_ITUNES= ( PLIST_UnsortedDict | PLIST_AddComputer | PLIST_Amp38 ), };
 
 	typedef struct Self_ {
 		Obj  plist;
@@ -284,10 +285,15 @@ void abouto() {
 		ei (cs_exact("-noes",arg))      _ savemode |=  JSON_NoEscapeSlash;
 		ei (cs_exact("+noes",arg))      _ savemode &= ~JSON_NoEscapeSlash;
 
-		ei (cs_exact("-nocomp",arg))    _ savemode |=  Binary_NoComp;
-		ei (cs_exact("+nocomp",arg))    _ savemode &= ~Binary_NoComp;
-		ei (cs_exact("-maxcomp",arg))   _ savemode |=  Binary_MaxComp;
-		ei (cs_exact("+maxcomp",arg))   _ savemode &= ~Binary_MaxComp;
+		ei (cs_exact("-nocomp",arg))    _ savemode |=  BINARY_NoComp;
+		ei (cs_exact("+nocomp",arg))    _ savemode &= ~BINARY_NoComp;
+		ei (cs_exact("-maxcomp",arg))   _ savemode |=  BINARY_MaxComp;
+		ei (cs_exact("+maxcomp",arg))   _ savemode &= ~BINARY_MaxComp;
+
+		ei (cs_exact("-html",arg))      _ savemode |=  JSON_HTML;
+		ei (cs_exact("+html",arg))      _ savemode &= ~JSON_HTML;
+		ei (cs_exact("-nelf",arg))      _ savemode |=  JSON5_NoEscLF;
+		ei (cs_exact("+nelf",arg))      _ savemode &= ~JSON5_NoEscLF;
 
 		ei (cs_exact("-c",arg)) {
 			vi_about(0);
@@ -358,6 +364,19 @@ void abouto() {
 			obj=obj_FromString(Class_Real,str+cs_length(key));
 			if (!obj) Quit_("bad Real value: %s",OError());
 			}
+
+		ei (cs_prefix((key="int128:"),str)) {
+			char *cp=str+cs_length(key);
+			int pos=cc_pos(':',cp);
+				if (pos==EOF) Quit_("*** object:int128 w/o ':' seperator for 2nd/high huge?");
+				cleanO Char temp=Char_Value(cp);
+				temp[pos]=0; cp=temp+pos+1;
+			Huge hhh=newOC(Huge,2);
+				hhh[0]=cs_toHuge(temp);
+				hhh[1]=cs_toHuge(cp);
+			obj=hhh;
+			}
+
 		ei (cs_prefix((key="data:"),str)) {
 			obj=obj_FromString(Class_Data,str+cs_length(key));
 			if (!obj) Quit_("bad Data: %s",OError());
@@ -366,6 +385,15 @@ void abouto() {
 			char *path=str+cs_length(key);
 			obj=Data_FromFile(path);
 			if (!obj) Quit_("can't load file(%s): %s",path,OError());
+			}
+
+		ei (cs_prefix((key="textfile:"),str)) {
+			char *path=str+cs_length(key);
+			cleanO Data ooo=Data_FromFile(path);
+			if (!ooo) Quit_("can't load file(%s): %s",path,OError());
+			int size=sizeO(ooo);
+			obj=newOC(Char,size+1);
+			cs_blockCopy(obj,ooo,size);
 			}
 
 		ei (cs_exact("null",str)) obj=0;

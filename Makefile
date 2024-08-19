@@ -1,6 +1,6 @@
 # Apple, Linux, Windows (has install issues) # 08/10/2024
 
-VERSION = 1.3
+VERSION = 1.4
 COPYYEARS = 2024
 MAJOR   = 1
 COMPAT  = 1.0

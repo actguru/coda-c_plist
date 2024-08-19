@@ -35,6 +35,7 @@ along with Coda-C_PList. If not, see <https://www.gnu.org/licenses/>.
 	#define $CLEANUP(fun) __attribute__((cleanup (fun)))
 	#define $CONSUMED
 	#define $FORMAT12     __attribute__((format (coda_printf, 1, 2)))
+	#define $NORETURN     __attribute__((__noreturn__))
 
 	#if WIN32
 		#define coda_printf gnu_printf
@@ -78,6 +79,8 @@ CodaClassDef(Void,void,0);
 	#define countO(obj)			Memory_count(obj)
 	#define sizeO(obj)			Memory_size(obj)
 	#define kindO(obj)			Memory_kind(obj)
+	#define Msg_(...) Msg_Object(Char_F(__VA_ARGS__),0)
+	#define Quit_(cs,...) Die_Object(Char_F(cs,##__VA_ARGS__),0)
 	#define Pointer_count Root_get_count
 void Array_removeBlock(Array self,int dix,int count);
 void Array_takeBlock(Array self,int index,int count,pointer block);
@@ -120,6 +123,8 @@ char* Memory_kind(Obj obj);
 int4 Memory_size(Obj obj);
 int4 Memory_count(Obj obj);
 Obj Memory_newO(Obj obj,int nel);
+void Msg_Object(Char $CONSUMED msg,int log);
+Obj $NORETURN Die_Object(Char $CONSUMED msg,int trace);
 Pointer Pointer_Value(pointer value);
 int Root_get_count(Root self);
 #define Root_count Root_get_count
@@ -137,23 +142,25 @@ CodaClassDef(Huge,huge,Root);
 CodaClassDef(HugeUID,huge,Huge);
 CodaClassDef(Real,double,Root);
  enum {
-	PLIST_UnsortedDict=1,
-	PLIST_NL4Leafs=2,
-	PLIST_AddComputer=4,
-	PLIST_Amp38=8,
-	PLIST_Apple=16,
-	PLIST_NoEncoding=32,
-	PLIST_NoDoctype=64,
-	PLIST_NoPVersion=128,
-	JSON_NoEscapeSlash=512,
-	PLIST_Coda_C     =1<<10,
-	PLIST_Binary     =1<<11,
-	PLIST_ObjectStream=4096,
-	PLIST_Json       =1<<13,
-	JSON_Pretty      =1<<14,
-	PLIST_Strict     =1<<15,
-	Binary_MaxComp   =1<<30,
-	Binary_NoComp    =1<<31,
+	PLIST_UnsortedDict=    1,
+	PLIST_NL4Leafs=        2,
+	PLIST_AddComputer=     4,
+	PLIST_Amp38=           8,
+	PLIST_Apple=          16,
+	PLIST_NoEncoding=     32,
+	PLIST_NoDoctype   =   64,
+	PLIST_NoPVersion  =  128,
+	JSON_HTML         =1<< 8,
+	JSON_NoEscapeSlash=1<< 9,
+	PLIST_Coda_C      =1<<10,
+	PLIST_Binary      =1<<11,
+	PLIST_ObjectStream=1<<12,
+	PLIST_Json        =1<<13,
+	JSON_Pretty       =1<<14,
+	PLIST_Strict      =1<<15,
+	JSON5_NoEscLF     =1<<28,
+	BINARY_MaxComp    =1<<30,
+	BINARY_NoComp     =1<<31,
 	};
 Bool Bool_Value(bool value);
 Data Data_NewBlock(Data self,int count,pointer address);

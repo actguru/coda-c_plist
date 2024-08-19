@@ -137,6 +137,7 @@ The current list of \fIObjects\fR follows:
 	\fBreal:\fR\fI12.345\fR
 	\fBdata:\fR\fIBASE64.DATA.AAAA\fR
 	\fBdatafile:\fR\fIMyfile.bin\fR  (contents of file as Data)
+	\fBtextfile:\fR\fIMyfile.txt\fR  (contents of file as Char)
 	\fB./\fRFILE\fI[:KEYPATH]\fR  (component of plist file)
 	\fB/\fRFILE\fI[:KEYPATH]\fR
 	\fB:KEYPATH\fR  (in current plist)

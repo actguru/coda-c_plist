@@ -284,8 +284,8 @@ CodaClassDef(Void,void,0);
 	#define classO(obj)			Memory_class(obj)
 	#define kindO(obj)			Memory_kind(obj)
 	#define	superO(obj)			Memory_superObject(obj)
- #define Msg_(...) Msg_Object(Char_F(__VA_ARGS__),0)
- #define Log_(...) Msg_Object(Char_F(__VA_ARGS__),1)
+	#define Msg_(...) Msg_Object(Char_F(__VA_ARGS__),0)
+	#define Log_(...) Msg_Object(Char_F(__VA_ARGS__),1)
 	#define Quit_(cs,...) Die_Object(Char_F(cs,##__VA_ARGS__),0)
 	#define Die_(cs,...) Die_Object(Char_F("Die:%s: " cs,__func__,##__VA_ARGS__),1)
 	#define Assert_(e) ((void)((e)?0:Die_Object(Char_F("%s: !True(%s)",__func__,#e),1)))
@@ -784,6 +784,8 @@ void Class_register(Obj obj) {
 		char resv[64-sizeof(pointer)-8*sizeof(int4)-sizeof(pointer)];
 		} *CMux;
 
+ static_assert(CodaCOSize==sizeof(struct CMux_),"TOTAL SIZE must equal 64");
+
 	#define CMUXMINPOW  4
 	#define CMUXMAXPOW 28
 
@@ -867,18 +869,6 @@ void *CMux_KeyData(pointer cmux,char *key,pointer data) {
 	return(data);
 	}
 
-	typedef struct csKeyword_ {
-		struct csKeyword_ *nxt;
-		pointer data;
-		char key[0];
-		} csKeyword;
-
-	struct Dictionary_ {
-		csKeyword *list;
-		Char name;
-		struct CMux_ mux;
-		};
-
 $boot() {
 	Version_register( "Coda-C_PList",
 	Os(QVersion ", " QWebsite ", Copyright (c) " QCopyYears "  Stephen M. Jones, Affero GPL 3."
@@ -944,6 +934,18 @@ typedef Pointer OSig(AllKeys)(Obj dict) ;               sig_(AllKeys);
 typedef Char OSig(xmlTag)(Obj obj);                     sig_(xmlTag);
 
 #define class Dictionary
+
+	typedef struct csKeyword_ {
+		struct csKeyword_ *nxt;
+		pointer data;
+		char key[0];
+		} csKeyword;
+
+	struct Dictionary_ {
+		csKeyword *list;
+		Char name;
+		struct CMux_ mux;
+		};
 
 void $(dtor,CodaCLASS *clas) {
 	if (_ mux.hasher) CMux_dtor(& _ mux);
@@ -1101,9 +1103,9 @@ $boot(StephenMJones) {
 	}
 #undef class
 	void Dictionary_auto(Dictionary dict) { }
-	bool DictHash_keyobj(Dictionary dict,char *key,pointer obj) { Quit_("%s; is not defined.",__func__); }
-	bool DictHash_keydel(Dictionary dict,char *key) { Quit_("%s; is not defined.",__func__); }
-	Obj DictHash_obj4key(Dictionary dict,char *key) {  Quit_("%s; is not defined.",__func__); }
+	bool DictHash_keyobj(Dictionary dict,char *key,pointer obj) { Die_("%s; is not defined.",__func__); }
+	bool DictHash_keydel(Dictionary dict,char *key) { Die_("%s; is not defined.",__func__); }
+	Obj DictHash_obj4key(Dictionary dict,char *key) {  Die_("%s; is not defined.",__func__); }
 
 Keyword Dictionary_scan(Dictionary dict) {
 	if (!dict) return(0);
@@ -1330,12 +1332,21 @@ Obj Memory_newO(Obj obj,int nel) {
 	CodaStructMeta *Memory_metanext( CodaStructMeta *meta) { return(0); }
 	int Memory_totalMeta0Size(CodaStructMeta *meta) { return(meta->size+CodaMetaSize); }
 
+void (*Msg_hook)(Char msg,int log)=0;
+
+void Msg_Object(Char $CONSUMED msg,int log) {
+	if (Msg_hook) Msg_hook(msg,log);
+	  else	fprintf(stderr,"%s\n",msg);
+	freeO(msg);
+	}
+
 void (*Die_hook)(Char msg,int trace)=0;
 
 Obj $NORETURN Die_Object(Char $CONSUMED msg,int trace) {
 	if (Die_hook) Die_hook(msg,trace);
 	  else	fprintf(stderr,"%s\n",msg);
 	freeO(msg);
+	if (!trace) exit(-1);
 	abort();
 	exit(-2);
 	}
@@ -1867,23 +1878,25 @@ CodaClassDef(Real,double,Root);
 	#define Error_F(...) OErrorSet(Char_F(__VA_ARGS__))
 	#define OAbort(...) return(Error_F(__VA_ARGS__))
  enum {
-	PLIST_UnsortedDict=1,
-	PLIST_NL4Leafs=2,
-	PLIST_AddComputer=4,
-	PLIST_Amp38=8,
-	PLIST_Apple=16,
-	PLIST_NoEncoding=32,
-	PLIST_NoDoctype=64,
-	PLIST_NoPVersion=128,
-	JSON_NoEscapeSlash=512,
-	PLIST_Coda_C     =1<<10,
-	PLIST_Binary     =1<<11,
-	PLIST_ObjectStream=4096,
-	PLIST_Json       =1<<13,
-	JSON_Pretty      =1<<14,
-	PLIST_Strict     =1<<15,
-	Binary_MaxComp   =1<<30,
-	Binary_NoComp    =1<<31,
+	PLIST_UnsortedDict=    1,
+	PLIST_NL4Leafs=        2,
+	PLIST_AddComputer=     4,
+	PLIST_Amp38=           8,
+	PLIST_Apple=          16,
+	PLIST_NoEncoding=     32,
+	PLIST_NoDoctype   =   64,
+	PLIST_NoPVersion  =  128,
+	JSON_HTML         =1<< 8,
+	JSON_NoEscapeSlash=1<< 9,
+	PLIST_Coda_C      =1<<10,
+	PLIST_Binary      =1<<11,
+	PLIST_ObjectStream=1<<12,
+	PLIST_Json        =1<<13,
+	JSON_Pretty       =1<<14,
+	PLIST_Strict      =1<<15,
+	JSON5_NoEscLF     =1<<28,
+	BINARY_MaxComp    =1<<30,
+	BINARY_NoComp     =1<<31,
 	PLIST_ITUNES= ( PLIST_UnsortedDict | PLIST_AddComputer | PLIST_Amp38 ),
 	};
 	#define Real_count Root_get_count
@@ -3374,6 +3387,25 @@ Obj Json_toStream(Obj stream,Obj container,int flags);
 Obj Json_save(char *file,Obj container,int flags);
 Obj Json_Load(char *file,int flags);
 
+void Json_data2os(oPrintf jprintf,pointer stream,char *str,int4 flags) {
+	int chunk=((flags>>16)&0x0FFF);
+	if (chunk && (chunk<4 || chunk>4095)) chunk=72;
+
+	if (!chunk) { jprintf(stream,"%s",str); return; }
+
+	int len=cs_length(str);
+	char buf[chunk+1];
+	for(int j=0;j<len;++j) {
+		int mod=j%chunk;
+		if (mod==0) jprintf(stream,"\n");
+		buf[mod]=str[j];
+		if (mod==chunk-1 || j==len-1) {
+			buf[mod+1]=0;
+			jprintf(stream,"%s",buf);
+			}
+		}
+	}
+
 	#define ALEN 4096
 
 	typedef struct PLPTR5_ {
@@ -3682,7 +3714,7 @@ int4 Json_lastLoadType() { return(Json_lastLoadTypeThread); }
 Obj Json_FromBlock(int count,pointer block,int flags) {
 	if (!block) OAbort("Null data!");
 
-	bool redirect=(count>8 && 0==cs_blockCmp(block,"bplist00",8));
+	bool redirect=(count>8 && 0==cs_blockCmp(block,"bplist0",7));
 
 	if (!redirect) {
 		for(int j=0;j<count;++j) {
@@ -3729,17 +3761,22 @@ static int json_encodedLength(char *a) {
 	return(len);
 	}
 
-char* Json_stringEncode(int bufsize,char *buffer,char *a,Char *extra,bool noes) {
+char* Json_stringEncode(int bufsize,char *buffer,char *a,Char *extra,int4 flags) {
+	bool noes=(flags & JSON_NoEscapeSlash);
+	bool html=(flags & JSON_HTML);
+	bool nelf=(flags & JSON5_NoEscLF);
 	bufsize-=4;
 	if (extra) {
 		int size=json_encodedLength(a)+1;
 		if (size>bufsize) { bufsize=size; buffer=alocO(size); *extra=buffer; }
 		}
-	int k=0;
+	int k=0,lcc=0;
 	for(int j=0;a[j];++j) {
 		int cc=a[j]&0xFF;
 		if (k>=bufsize) OAbort("%s; overflow %d.",__func__,k);
-		if ((noes==0 && cc=='/') || cc=='\\' || cc=='"') buffer[k++]='\\';
+		bool es= ( (!noes && !html) || (html && lcc=='<'));
+		if ( (es && cc=='/') || cc=='\\' || cc=='"') buffer[k++]='\\';
+		ei (nelf && cc=='\n') ;
 		ei (cc<32) {
 			buffer[k++]='\\';
 			if (cc=='\t') cc='t';
@@ -3752,10 +3789,11 @@ char* Json_stringEncode(int bufsize,char *buffer,char *a,Char *extra,bool noes) 
 				if (k+6>=bufsize) OAbort("%s; Overflow %d.",__func__,k);
 				cs_copy(buffer+k,temp);
 				k+=cs_length(temp);
+				lcc=0;
 				continue;
 				}
 			}
-		buffer[k++]=cc;
+		buffer[k++]=cc; lcc=cc;
 		}
 	buffer[k]=0;
 	return(buffer);
@@ -3857,11 +3895,15 @@ Obj Json_toStream(Obj stream,Obj container,int flags) {
 		ei (isa_(obj,Huge)) ePrintf("%s",aa);
 		ei (isa_(obj,Data)) {
 			if (hasFlag(PLIST_Strict)) OAbort("Strict: <data> is not supported in JSON.");
-			ePrintf("{\"CF$Data\":\"%s\"}",aa);
+			ePrintf("{\"CF$Data\":\"");
+			if (hasFlag(JSON_Pretty) && hasFlag(JSON5_NoEscLF))
+				Json_data2os(_ oprintf,_ stream,aa,_ flags);
+			  else ePrintf("%s",aa);
+			ePrintf("\"}");
 			}
 		ei (isa_(obj,Char)) {
 			Char extra=0;
-			if (!Json_stringEncode(BLEN,_ b,aa,&extra,hasFlag(JSON_NoEscapeSlash))) return(0);
+			if (!Json_stringEncode(BLEN,_ b,aa,&extra,_ flags)) return(0);
 			cleanO Char temp=extra;
 			char *buffer=(temp?temp:_ b);
 
@@ -3906,7 +3948,7 @@ Obj Json_toStream(Obj stream,Obj container,int flags) {
 			char *cp=vector[j];
 			Obj obj=Dictionary_subKey(container,cp);
 			if (!obj) OAbort("can't find obj for(%s) internal error? NEVER",cp);
-			if (!Json_stringEncode(BLEN,_ b,cp,0,hasFlag(JSON_NoEscapeSlash))) return(0);
+			if (!Json_stringEncode(BLEN,_ b,cp,0,_ flags)) return(0);
 			jsn_indentEqn(self);
 			if (!jprints(self,_ b)) return(0);
 			if (isPretty()) ePrintf(" : "); else ePrintf(":");
